@@ -164,31 +164,33 @@ export async function listLogs(req, res) {
 }
 
 /** 오늘(또는 특정 날짜) 읽은 페이지 기록 */
-export async function createLog(req, res) {
-  const record = await getOwnRecord(req.valid.params.id, req.user.id);
-  const { date: dateInput, pagesRead, toPage, memo } = req.valid.body;
+/**
+ * 독서 로그 한 건 저장 (직접 기록 · 타이머 공용)
+ * - pagesRead 또는 toPage 로 진행 페이지를 올리고, 끝까지 읽으면 완독 처리
+ * - allowZeroPages: 타이머로 "시간만" 기록할 때 0쪽 허용
+ */
+async function applyReadingLog(record, { dateKey: dateK = todayKey(), pagesRead, toPage, memo, minutes = null, allowZeroPages = false }) {
   const total = record.book.totalPages;
-  const dateK = dateInput ?? todayKey();
   const date = keyToDate(dateK);
   if (date > todayDate()) throw badRequest('미래 날짜에는 기록할 수 없어요.', { date: '오늘 이후 날짜예요.' });
-  // 시작일보다 이전 날짜를 기록하면 시작일을 그 날로 당긴다 (아래 update 참고)
 
   const base = record.status === 'FINISHED' ? total : record.status === 'WANT_TO_READ' ? 0 : record.currentPage;
-  if (base >= total) throw badRequest('이미 마지막 페이지까지 읽은 책이에요.');
+  const noPages = pagesRead === undefined && toPage === undefined;
+  if (!(allowZeroPages && noPages) && base >= total) throw badRequest('이미 마지막 페이지까지 읽은 책이에요.');
 
-  const target = toPage !== undefined ? toPage : base + pagesRead;
-  const newPage = Math.min(target, total);
+  const target = noPages ? base : toPage !== undefined ? toPage : base + pagesRead;
+  const newPage = Math.min(Math.max(target, base), total);
   const added = newPage - base;
-  if (added <= 0) {
+  if (added <= 0 && !(allowZeroPages && noPages)) {
     throw badRequest(`지금까지 ${base}쪽을 읽었어요. 그보다 뒤 페이지를 입력해 주세요.`, {
       toPage: `${base}쪽보다 큰 값을 입력해 주세요.`,
     });
   }
 
   const finished = newPage >= total;
-  const result = await prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx) => {
     const log = await tx.readingLog.create({
-      data: { readingRecordId: record.id, userId: record.userId, date, pagesRead: added, memo: memo ?? null },
+      data: { readingRecordId: record.id, userId: record.userId, date, pagesRead: added, memo: memo ?? null, minutes },
     });
     const updated = await tx.readingRecord.update({
       where: { id: record.id },
@@ -200,10 +202,70 @@ export async function createLog(req, res) {
       },
       include: recordInclude,
     });
-    return { log, updated };
+    return { log, updated, finished };
   });
+}
 
-  res.status(201).json({ log: serializeLog(result.log), record: serializeRecord(result.updated), finished });
+/** 오늘(또는 특정 날짜) 읽은 페이지 기록 */
+export async function createLog(req, res) {
+  const record = await getOwnRecord(req.valid.params.id, req.user.id);
+  const { date, pagesRead, toPage, memo } = req.valid.body;
+  const result = await applyReadingLog(record, { dateKey: date, pagesRead, toPage, memo });
+  res.status(201).json({ log: serializeLog(result.log), record: serializeRecord(result.updated), finished: result.finished });
+}
+
+// ───────── 독서 타이머 (서버에 시작 시각을 저장 → 새로고침 · 다른 기기에서도 유지) ─────────
+
+export const stopTimerSchema = z.object({
+  pagesRead: z.coerce.number().int().min(1).max(5000).optional(),
+  toPage: z.coerce.number().int().min(1).max(20000).optional(),
+  memo: optionalText(200),
+});
+
+const sessionInclude = { record: { include: { book: true } } };
+const serializeSession = (s) =>
+  s
+    ? {
+        id: s.id,
+        startedAt: s.startedAt,
+        record: serializeRecord(s.record),
+      }
+    : null;
+
+export async function getTimer(req, res) {
+  const session = await prisma.readingSession.findUnique({ where: { userId: req.user.id }, include: sessionInclude });
+  res.json({ session: serializeSession(session), serverNow: new Date() });
+}
+
+export async function startTimer(req, res) {
+  const record = await getOwnRecord(req.valid.params.id, req.user.id);
+  if (record.status === 'FINISHED') throw badRequest('이미 다 읽은 책이에요.');
+  const existing = await prisma.readingSession.findUnique({ where: { userId: req.user.id }, include: sessionInclude });
+  if (existing) {
+    if (existing.readingRecordId === record.id) return res.json({ session: serializeSession(existing) });
+    throw conflict(`「${existing.record.book.title}」 타이머가 이미 돌아가고 있어요. 먼저 멈춰 주세요.`);
+  }
+  const session = await prisma.readingSession.create({
+    data: { userId: req.user.id, readingRecordId: record.id },
+    include: sessionInclude,
+  });
+  res.status(201).json({ session: serializeSession(session) });
+}
+
+export async function stopTimer(req, res) {
+  const session = await prisma.readingSession.findUnique({ where: { userId: req.user.id }, include: sessionInclude });
+  if (!session) throw notFound('돌아가고 있는 타이머가 없어요.');
+  const minutes = Math.max(1, Math.round((Date.now() - session.startedAt.getTime()) / 60000));
+  const { pagesRead, toPage, memo } = req.valid.body;
+  const record = await prisma.readingRecord.findUnique({ where: { id: session.readingRecordId }, include: { book: true } });
+  const result = await applyReadingLog(record, { pagesRead, toPage, memo, minutes, allowZeroPages: true });
+  await prisma.readingSession.delete({ where: { id: session.id } });
+  res.json({ log: serializeLog(result.log), record: serializeRecord(result.updated), finished: result.finished, minutes });
+}
+
+export async function cancelTimer(req, res) {
+  await prisma.readingSession.deleteMany({ where: { userId: req.user.id } });
+  res.json({ ok: true });
 }
 
 /** 잘못 남긴 로그 삭제 → 진행 페이지도 그만큼 되돌림 */

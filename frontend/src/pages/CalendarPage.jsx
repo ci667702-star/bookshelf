@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ImageDown, Plus } from 'lucide-react';
 import { readingApi } from '../services/index.js';
 import { useDocumentTitle } from '../hooks/index.js';
 import Button from '../components/ui/Button.jsx';
@@ -11,6 +11,8 @@ import Sticker from '../components/ui/Sticker.jsx';
 import BookCover from '../components/book/BookCover.jsx';
 import LogModal from '../components/book/LogModal.jsx';
 import MonthGrid from '../components/calendar/MonthGrid.jsx';
+import { MonthShareCard, ShareImageModal } from '../components/share/ShareImage.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import { formatDay, num, todayKey } from '../utils/format.js';
 
 function Stat({ label, value, unit, tone }) {
@@ -35,6 +37,8 @@ export default function CalendarPage() {
   });
   const [selected, setSelected] = useState(initial);
   const [logOpen, setLogOpen] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const { user } = useAuth();
 
   const q = useQuery({
     queryKey: ['calendar', ym.year, ym.month],
@@ -65,10 +69,20 @@ export default function CalendarPage() {
           <h1 className="text-[22px]">독서 달력</h1>
           <p className="mt-1 text-[14px] text-ink-soft">책을 읽은 날엔 표지가, 완독한 날엔 빨간 핀이 꽂혀요.</p>
         </div>
-        <Button onClick={() => setLogOpen(true)}>
-          <Plus size={16} /> 독서 기록 추가
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="soft" onClick={() => setSharing(true)} disabled={!q.data}>
+            <ImageDown size={16} /> 이달 결산 이미지
+          </Button>
+          <Button onClick={() => setLogOpen(true)}>
+            <Plus size={16} /> 독서 기록 추가
+          </Button>
+        </div>
       </div>
+      {q.data && (
+        <ShareImageModal open={sharing} onClose={() => setSharing(false)} title={`${q.data.month}월 독서 결산`} filename={`bookmoment-${q.data.year}-${q.data.month}`}>
+          <MonthShareCard data={q.data} nickname={user?.nickname} />
+        </ShareImageModal>
+      )}
 
       <QueryState query={q} loading={<SkeletonBlock className="h-[640px]" />}>
         {(data) => {
@@ -109,12 +123,13 @@ export default function CalendarPage() {
                 </div>
 
                 {/* 월간 통계 */}
-                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
                   <Stat label="읽은 페이지" value={num(data.stats.totalPages)} unit="쪽" tone="bg-paper/90" />
                   <Stat label="쌓인 높이" value={data.stats.heightCm} unit="cm" tone="bg-paper/90" />
                   <Stat label="읽은 날" value={data.stats.readingDays} unit="일" tone="bg-paper/90" />
                   <Stat label="완독" value={data.stats.finishedCount} unit="권" tone="bg-paper/90" />
-                  <Stat label="최장 연속" value={data.stats.bestStreak} unit="일" tone="bg-paper/90 col-span-2 sm:col-span-1" />
+                  <Stat label="최장 연속" value={data.stats.bestStreak} unit="일" tone="bg-paper/90" />
+                  <Stat label="읽은 시간" value={data.stats.totalMinutes ?? 0} unit="분" tone="bg-paper/90" />
                 </div>
                 <div className="mt-2 rounded-[8px] bg-paper/90 px-4 py-3">
                   <div className="mb-1.5 flex justify-between text-[12.5px]">
@@ -144,6 +159,7 @@ export default function CalendarPage() {
                   <>
                     <p className="mt-1 text-[14px]">
                       <b className="numeral text-[22px] text-cocoa-deep">{day.pages}</b>쪽 읽었어요
+                      {day.minutes > 0 && <span className="ml-1 text-ink-soft">({day.minutes}분)</span>}
                     </p>
                     {day.finished.length > 0 && (
                       <div className="mt-4 rounded-[8px] bg-rose/60 p-3">
@@ -166,7 +182,7 @@ export default function CalendarPage() {
                             <span className="min-w-0 flex-1">
                               <span className="block truncate font-serif text-[14px] font-bold">{l.book.title}</span>
                               <span className="block text-[12.5px] text-ink-soft">
-                                {l.pagesRead}쪽{l.isAuto ? ' (진행 업데이트)' : ''}
+                                {l.pagesRead}쪽{l.minutes ? ` · ${l.minutes}분` : ''}{l.isAuto ? ' (진행 업데이트)' : ''}
                               </span>
                               {l.memo && <span className="mt-0.5 block text-[12.5px]">“{l.memo}”</span>}
                             </span>

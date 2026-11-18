@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowUpToLine, Minus, Plus, RotateCcw, RotateCw, Save, Trash2, Undo2 } from 'lucide-react';
+import { ArrowUpToLine, Lock, Minus, Plus, RotateCcw, RotateCw, Save, Trash2, Undo2 } from 'lucide-react';
 import { shelfApi } from '../services/index.js';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { useDocumentTitle } from '../hooks/index.js';
@@ -12,7 +12,8 @@ import { Segmented } from '../components/ui/Misc.jsx';
 import ImageUpload from '../components/ui/ImageUpload.jsx';
 import Sticker from '../components/ui/Sticker.jsx';
 import ShelfScene from '../components/book/ShelfScene.jsx';
-import { ARRANGEMENTS, ITEM_LABELS, SHELF_STYLES, STICKER_LABELS, THEMES, THEME_KEYS } from '../utils/constants.js';
+import { ARRANGEMENTS, ITEM_LABELS, REWARD_STICKERS, SHELF_STYLES, STICKER_LABELS, THEMES, THEME_KEYS } from '../utils/constants.js';
+import { useBadges } from '../components/social/Badges.jsx';
 
 const BG_PRESETS = ['#FFF9F2', '#FFFFFF', '#FBE4E4', '#F2E8DC', '#EFE2D0', '#E3EEF7', '#E4EDDF', '#EEE7F6', '#F8E8B8'];
 const MAX_DECO = 40;
@@ -52,6 +53,9 @@ function Editor({ shelfId, data, shelves }) {
   const [draft, setDraft] = useState(saved);
   const [selectedId, setSelectedId] = useState(null);
   const [panel, setPanel] = useState('theme');
+  const badgesQ = useBadges();
+  const unlocked = badgesQ.data?.unlockedStickers ?? [];
+  const badgeList = badgesQ.data?.badges ?? [];
 
   useEffect(() => {
     setDraft(saved);
@@ -329,18 +333,33 @@ function Editor({ shelfId, data, shelves }) {
           {panel === 'sticker' && (
           <Panel title="스티커 붙이기">
             <div className="grid grid-cols-4 gap-2">
-              {Object.entries(STICKER_LABELS).map(([type, label]) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => add('sticker', type)}
-                  className="flex flex-col items-center gap-1 rounded-xl bg-milk py-2 text-[11.5px] font-semibold transition hover:bg-rose/50"
-                >
-                  <Sticker type={type} className="h-9 w-9" />
-                  {label}
-                </button>
-              ))}
+              {Object.entries(STICKER_LABELS).map(([type, label]) => {
+                const locked = REWARD_STICKERS.includes(type) && !unlocked.includes(type);
+                const badge = badgeList.find((b) => b.reward === type);
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => (locked ? toast.info(`배지 「${badge?.name ?? ''}」를 얻으면 열려요.`) : add('sticker', type))}
+                    aria-disabled={locked || undefined}
+                    title={locked ? `배지 「${badge?.name ?? ''}」를 얻으면 열려요` : undefined}
+                    className={`relative flex flex-col items-center gap-1 rounded-[6px] border-[1.5px] py-2 text-[11.5px] font-semibold transition ${
+                      locked ? 'border-dashed border-ink/25 bg-kraft/40 text-ink-soft' : 'border-transparent bg-milk hover:border-ink/40 hover:bg-rose/50'
+                    }`}
+                  >
+                    <Sticker type={type} className={`h-9 w-9 ${locked ? 'opacity-30 grayscale' : ''}`} />
+                    {label}
+                    {locked && <Lock size={12} className="absolute top-1 right-1" aria-label="잠김" />}
+                  </button>
+                );
+              })}
             </div>
+            <p className="mt-2 text-[12px] text-ink-soft">
+              자물쇠 스티커는 배지를 모으면 열려요.{' '}
+              <Link to="/me" className="text-link underline">
+                내 배지 보기
+              </Link>
+            </p>
           </Panel>
           )}
           {panel === 'item' && (

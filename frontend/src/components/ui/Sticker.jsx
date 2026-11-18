@@ -84,6 +84,67 @@ const STICKERS = {
       <circle cx="44" cy="40" r="2.4" fill="#F5D8D8" stroke="none" />
     </g>
   ),
+  // ── 배지로 여는 스티커 ──
+  strawberry: (
+    <g {...S}>
+      <path d="M32 58 C 18 50, 9 37, 13 27 C 17 18, 47 18, 51 27 C 55 37, 46 50, 32 58 Z" fill="#EB8A86" />
+      <path d="M19 23 L25 14 L29 20 L32 11 L35 20 L39 14 L45 23 Q 32 18 19 23 Z" fill="#9DBB8E" />
+      {[
+        [24, 31],
+        [32, 29],
+        [40, 31],
+        [28, 39],
+        [36, 39],
+        [32, 47],
+      ].map(([x, y]) => (
+        <ellipse key={`${x}-${y}`} cx={x} cy={y} rx="1.4" ry="2" fill="#FFF3C4" stroke="none" />
+      ))}
+    </g>
+  ),
+  letter: (
+    <g {...S}>
+      <rect x="8" y="16" width="48" height="34" rx="4" fill="#FFF9F2" />
+      <path d="M9 19 L32 37 L55 19" fill="none" />
+      <path d="M32 44 C 26 40, 25 36, 28 34.5 C 30 33.5, 31.5 34.5, 32 36 C 32.5 34.5, 34 33.5, 36 34.5 C 39 36, 38 40, 32 44 Z" fill="#EBA5A2" strokeWidth="1.8" />
+    </g>
+  ),
+  clover: (
+    <g {...S}>
+      <path d="M32 40 q 4 10 12 17" fill="none" strokeWidth="3" />
+      <circle cx="24" cy="24" r="10" fill="#B7D6A3" />
+      <circle cx="40" cy="24" r="10" fill="#B7D6A3" />
+      <circle cx="24" cy="40" r="10" fill="#B7D6A3" />
+      <circle cx="40" cy="40" r="10" fill="#B7D6A3" />
+      <circle cx="32" cy="32" r="4" fill="#9DBB8E" />
+    </g>
+  ),
+  rainbow: (
+    <g {...S}>
+      <path d="M7 46 A25 25 0 0 1 57 46 L49 46 A17 17 0 0 0 15 46 Z" fill="#F3B6B6" />
+      <path d="M15 46 A17 17 0 0 1 49 46 L42 46 A10 10 0 0 0 22 46 Z" fill="#F8E3A0" />
+      <path d="M22 46 A10 10 0 0 1 42 46 L36 46 A4 4 0 0 0 28 46 Z" fill="#B7D6A3" />
+      <circle cx="10" cy="48" r="5" fill="#fff" />
+      <circle cx="54" cy="48" r="5" fill="#fff" />
+    </g>
+  ),
+  moon: (
+    <g {...S}>
+      <path d="M40 9 A23 23 0 1 0 55 44 A18 18 0 1 1 40 9 Z" fill="#F8E3A0" />
+      <path d="M48 14 l1.5 3.5 3.5 1.5 -3.5 1.5 -1.5 3.5 -1.5 -3.5 -3.5 -1.5 3.5 -1.5 Z" fill="#fff" strokeWidth="1.5" />
+      <circle cx="24" cy="34" r="1.6" fill="#51443D" stroke="none" />
+      <path d="M27 40 q 3 2 6 0" fill="none" strokeWidth="1.8" />
+    </g>
+  ),
+  crown: (
+    <g {...S}>
+      <path d="M10 46 L13 20 L24 32 L32 14 L40 32 L51 20 L54 46 Z" fill="#F8D27A" />
+      <rect x="10" y="45" width="44" height="9" rx="2.5" fill="#F2C94C" />
+      <circle cx="13" cy="18" r="3" fill="#EBA5A2" />
+      <circle cx="32" cy="12" r="3" fill="#EBA5A2" />
+      <circle cx="51" cy="18" r="3" fill="#EBA5A2" />
+      <circle cx="32" cy="38" r="3.2" fill="#A9C7E3" strokeWidth="2" />
+    </g>
+  ),
 };
 
 const ITEMS = {

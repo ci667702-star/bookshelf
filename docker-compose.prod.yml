@@ -1,0 +1,42 @@
+# 배포용: 앱(API + 웹 화면) + PostgreSQL 을 한 번에 실행
+#   docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+# 설정값은 .env.production 에 (.env.production.example 참고)
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bookmoment
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?.env.production 에 POSTGRES_PASSWORD 를 넣어 주세요}
+      POSTGRES_DB: bookmoment
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookmoment -d bookmoment"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    # DB 포트는 바깥에 열지 않는다 (앱 컨테이너만 접속)
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env.production
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://bookmoment:${POSTGRES_PASSWORD}@db:5432/bookmoment?schema=public
+      UPLOAD_DIR: uploads
+    ports:
+      # 기본은 서버 안에서만 접속 가능(127.0.0.1) → 앞단의 Caddy/Nginx 가 https 로 연결
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-4000}:4000"
+    volumes:
+      - uploads:/app/backend/uploads
+
+volumes:
+  pgdata:
+  uploads:

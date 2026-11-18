@@ -87,7 +87,16 @@ export const STICKER_LABELS = {
   book: '책',
   coffee: '커피',
   cloud: '구름',
+  strawberry: '딸기',
+  letter: '편지',
+  clover: '네잎클로버',
+  rainbow: '무지개',
+  moon: '달',
+  crown: '왕관',
 };
+
+/** 배지를 모아야 열리는 스티커 (서버와 같은 목록) */
+export const REWARD_STICKERS = ['strawberry', 'letter', 'clover', 'rainbow', 'moon', 'crown'];
 export const ITEM_LABELS = {
   plant: '화분',
   lamp: '스탠드',

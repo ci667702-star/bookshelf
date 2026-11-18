@@ -26,6 +26,7 @@ enum NotificationType {
   LIKE
   COMMENT
   JOIN
+  FOLLOW
 }
 
 model User {
@@ -55,6 +56,11 @@ model User {
   decorations            BookshelfDecoration[]
   notifications          Notification[]          @relation("NotificationRecipient")
   actedNotifications     Notification[]          @relation("NotificationActor")
+  quotes                 Quote[]
+  following              Follow[]                @relation("Follower")
+  followers              Follow[]                @relation("Following")
+  badges                 UserBadge[]
+  readingSessions        ReadingSession[]
 }
 
 model Bookshelf {
@@ -93,6 +99,7 @@ model Book {
   createdBy User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
   records   ReadingRecord[]
   reviews   Review[]
+  quotes    Quote[]
 
   @@unique([createdById, titleKey])
   @@index([title])
@@ -118,6 +125,7 @@ model ReadingRecord {
   book        Book                  @relation(fields: [bookId], references: [id], onDelete: Cascade)
   logs        ReadingLog[]
   sharedItems SharedBookshelfItem[]
+  sessions    ReadingSession[]
 
   @@unique([userId, bookId])
   @@index([bookshelfId])
@@ -134,6 +142,8 @@ model ReadingLog {
   date            DateTime @db.Date
   pagesRead       Int
   memo            String?  @db.VarChar(200)
+  // 독서 타이머로 기록한 경우 읽은 시간(분)
+  minutes         Int?
   isAuto          Boolean  @default(false)
   createdAt       DateTime @default(now())
 
@@ -281,4 +291,62 @@ model Notification {
   sharedBookshelf SharedBookshelf? @relation(fields: [sharedBookshelfId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead, createdAt])
+}
+
+// 인상 깊은 문장 (밑줄 긋기)
+model Quote {
+  id        String   @id @default(cuid())
+  userId    String
+  bookId    String
+  content   String   @db.VarChar(500)
+  page      Int?
+  memo      String?  @db.VarChar(200)
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([bookId, createdAt])
+  @@index([isPublic, createdAt])
+}
+
+// 친구 팔로우 (follower 가 following 을 팔로우)
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+}
+
+// 획득한 배지 (조건은 서버 코드에 정의, 여기엔 획득 시각만 기록)
+model UserBadge {
+  id       String    @id @default(cuid())
+  userId   String
+  badgeKey String    @db.VarChar(40)
+  earnedAt DateTime  @default(now())
+  seenAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeKey])
+}
+
+// 진행 중인 독서 타이머 (사용자당 하나, 새로고침해도 유지)
+model ReadingSession {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  readingRecordId String
+  startedAt       DateTime @default(now())
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  record ReadingRecord @relation(fields: [readingRecordId], references: [id], onDelete: Cascade)
 }

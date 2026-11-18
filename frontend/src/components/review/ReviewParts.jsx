@@ -16,9 +16,7 @@ export function ReviewCard({ review, showBook = true, compact = false }) {
   return (
     <article className="card group relative flex gap-4 p-4 transition-shadow hover:shadow-[var(--shadow-lift)] sm:p-5">
       {showBook && review.book && (
-        <div className="shrink-0 rotate-[-2deg] bg-white p-1 pb-3 shadow-[0_4px_10px_-4px_rgba(81,68,61,0.4)]">
-          <BookCover book={review.book} className={compact ? 'h-16 w-12' : 'h-24 w-[68px]'} rounded="rounded-[1px]" shadow={false} />
-        </div>
+        <BookCover book={review.book} className={`shrink-0 ${compact ? 'h-16 w-12' : 'h-24 w-[68px]'}`} />
       )}
       <div className="flex min-w-0 flex-1 flex-col">
         {showBook && review.book && <p className="truncate text-[12px] font-semibold text-cocoa">{review.book.title}</p>}

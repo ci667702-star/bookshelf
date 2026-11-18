@@ -15,6 +15,7 @@ import {
   Ruler,
   Search,
   Settings,
+  Smartphone,
   UserRound,
   Users,
 } from 'lucide-react';
@@ -22,11 +23,16 @@ import { LogoMark } from '../components/ui/Logo.jsx';
 import { Avatar } from '../components/ui/Misc.jsx';
 import { PageLoader, Spinner } from '../components/ui/States.jsx';
 import Window from '../components/ui/Window.jsx';
+import Modal from '../components/ui/Modal.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { miscApi } from '../services/index.js';
-import { useDismiss } from '../hooks/index.js';
+import { useDismiss, useMediaQuery } from '../hooks/index.js';
+import { LeftRail, RightRail } from './SideRails.jsx';
 import { timeAgo } from '../utils/format.js';
+import { TimerBar } from '../components/book/Timer.jsx';
+import { BadgeWatcher } from '../components/social/Badges.jsx';
+import { useInstallPrompt } from '../hooks/useInstallPrompt.js';
 
 /** 화면별 창 제목 · 색 · 아이콘. top: 하단 탭의 최상위 화면(뒤로 가기 없음) */
 const SCREENS = [
@@ -80,6 +86,7 @@ const NOTI_TEXT = {
   LIKE: (n) => `「${n.review?.title ?? '독후감'}」에 좋아요를 눌렀어요.`,
   COMMENT: (n) => `「${n.review?.title ?? '독후감'}」에 댓글을 남겼어요.`,
   JOIN: (n) => `공유 책장 「${n.sharedBookshelf?.name ?? ''}」에 참여했어요.`,
+  FOLLOW: () => '나를 팔로우했어요.',
 };
 
 const popupCls =
@@ -135,7 +142,15 @@ function Notifications() {
                 {q.data.items.map((n) => (
                   <li key={n.id}>
                     <Link
-                      to={n.review ? `/reviews/${n.review.id}` : n.sharedBookshelf ? `/shared/${n.sharedBookshelf.id}` : '/dashboard'}
+                      to={
+                        n.review
+                          ? `/reviews/${n.review.id}`
+                          : n.sharedBookshelf
+                            ? `/shared/${n.sharedBookshelf.id}`
+                            : n.type === 'FOLLOW'
+                              ? `/users/${n.actor.id}`
+                              : '/dashboard'
+                      }
                       onClick={close}
                       className={`flex gap-3 border-b border-ink/10 px-3 py-2.5 transition hover:bg-milk ${n.isRead ? '' : 'bg-rose/30'}`}
                     >
@@ -200,7 +215,7 @@ function AppBar() {
   const [q, setQ] = useState('');
   return (
     <header className="sticky top-0 z-30 border-b-[1.5px] border-ink/85 bg-chrome bevel">
-      <div className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-3 sm:px-4">
+      <div className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-3 sm:px-4 xl:max-w-[1260px] 2xl:max-w-[1760px]">
         <Link to="/dashboard" className="flex shrink-0 items-center gap-2" aria-label="북모먼트 홈">
           <LogoMark className="h-8 w-8" />
           <span className="wordmark hidden text-[17px] text-cocoa-deep sm:inline">북모먼트</span>
@@ -256,14 +271,43 @@ function Clock() {
 }
 
 /** 하단 탭 바 (레트로 작업 표시줄 모양) + 시작 메뉴 */
+function InstallHelp({ open, onClose }) {
+  return (
+    <Modal open={open} onClose={onClose} title="북모먼트를 앱으로 설치하기" tone="aqua" size="sm">
+      <ul className="flex flex-col gap-3 text-[14px] leading-relaxed">
+        <li>
+          <b className="font-pixel">아이폰 · 아이패드 (Safari)</b>
+          <br />
+          아래쪽 <b>공유</b> 버튼 → <b>홈 화면에 추가</b>
+        </li>
+        <li>
+          <b className="font-pixel">안드로이드 (Chrome)</b>
+          <br />
+          오른쪽 위 <b>⋮</b> → <b>앱 설치</b> 또는 <b>홈 화면에 추가</b>
+        </li>
+        <li>
+          <b className="font-pixel">컴퓨터 (Chrome · Edge)</b>
+          <br />
+          주소창 오른쪽의 <b>설치</b> 아이콘
+        </li>
+      </ul>
+      <p className="mt-4 text-[12.5px] text-ink-soft">설치하면 홈 화면 아이콘으로 바로 열리고, 주소창 없이 앱처럼 보여요.</p>
+    </Modal>
+  );
+}
+
 function TabBar() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const [installHelp, setInstallHelp] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   const ref = useDismiss(open, close);
   const navigate = useNavigate();
+  const pwa = useInstallPrompt();
 
   return (
+    <>
+    <InstallHelp open={installHelp} onClose={() => setInstallHelp(false)} />
     <nav
       aria-label="하단 메뉴"
       className="fixed inset-x-0 bottom-0 z-30 border-t-[1.5px] border-ink/85 bg-chrome bevel pb-[env(safe-area-inset-bottom)]"
@@ -299,6 +343,19 @@ function TabBar() {
                     <i.icon size={16} /> {i.label}
                   </Link>
                 ))}
+                {!pwa.installed && (
+                  <button
+                    role="menuitem"
+                    onClick={async () => {
+                      close();
+                      if (pwa.canPrompt) await pwa.install();
+                      else setInstallHelp(true);
+                    }}
+                    className="flex w-full items-center gap-2.5 border-t border-ink/15 px-3 py-2 text-left text-[13.5px] hover:bg-link hover:text-white"
+                  >
+                    <Smartphone size={16} /> 앱으로 설치
+                  </button>
+                )}
                 <button
                   role="menuitem"
                   onClick={async () => {
@@ -328,7 +385,7 @@ function TabBar() {
                   t.primary
                     ? 'border-[1.5px] border-ink/85 bg-rose bevel'
                     : isActive
-                      ? 'border-[1.5px] border-ink/60 bg-paper bevel-in font-bold'
+                      ? 'border-[1.5px] border-ink/60 bg-paper bevel-in text-ink'
                       : 'border-[1.5px] border-transparent text-ink-soft hover:text-ink'
                 }`
               }
@@ -341,6 +398,7 @@ function TabBar() {
         <Clock />
       </div>
     </nav>
+    </>
   );
 }
 
@@ -349,6 +407,8 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const screen = useScreen();
+  const wide = useMediaQuery('(min-width: 1280px)');
+  const xwide = useMediaQuery('(min-width: 1536px)');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -363,20 +423,26 @@ export default function AppLayout() {
   return (
     <div className="min-h-dvh">
       <AppBar />
-      <main id="main" className="mx-auto max-w-5xl px-2.5 pt-4 pb-28 sm:px-4 sm:pt-6">
-        <Window
-          title={`${screen.title} - 북모먼트`}
-          tone={screen.tone}
-          icon={screen.top ? screen.icon : ArrowLeft}
-          menu={menu}
-          closeTo={location.pathname === '/dashboard' ? undefined : '/dashboard'}
-          bodyClassName="p-3.5 sm:p-6"
-        >
-          <Suspense fallback={<PageLoader label="페이지를 펼치는 중..." />}>
-            <Outlet />
-          </Suspense>
-        </Window>
-      </main>
+      <div className="mx-auto max-w-5xl px-2.5 pt-4 pb-28 sm:px-4 sm:pt-6 xl:grid xl:max-w-[1260px] xl:grid-cols-[minmax(0,1fr)_280px] xl:gap-5 2xl:max-w-[1760px] 2xl:grid-cols-[270px_minmax(0,1fr)_290px]">
+        {xwide && <LeftRail className="hidden 2xl:block" />}
+        <main id="main" className="min-w-0">
+          <Window
+            title={`${screen.title} - 북모먼트`}
+            tone={screen.tone}
+            icon={screen.top ? screen.icon : ArrowLeft}
+            menu={menu}
+            closeTo={location.pathname === '/dashboard' ? undefined : '/dashboard'}
+            bodyClassName="p-3.5 sm:p-6"
+          >
+            <Suspense fallback={<PageLoader label="페이지를 펼치는 중..." />}>
+              <Outlet />
+            </Suspense>
+          </Window>
+        </main>
+        {wide && <RightRail className="hidden xl:block" />}
+      </div>
+      <TimerBar />
+      <BadgeWatcher />
       <TabBar />
     </div>
   );

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, BookPlus, Palette, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookPlus, ImageDown, Palette, Pencil, Trash2 } from 'lucide-react';
+import { ShareImageModal, ShelfShareCard } from '../components/share/ShareImage.jsx';
 import { shelfApi } from '../services/index.js';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { useDocumentTitle } from '../hooks/index.js';
@@ -27,6 +28,7 @@ function ShelfBody({ data }) {
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [moveTo, setMoveTo] = useState('');
+  const [sharing, setSharing] = useState(false);
   useDocumentTitle(shelf.name);
 
   const myShelves = useQuery({
@@ -91,6 +93,10 @@ function ShelfBody({ data }) {
             </span>
           </div>
         </div>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="soft" onClick={() => setSharing(true)}>
+            <ImageDown size={15} /> 이미지로 저장
+          </Button>
         {isOwner && (
           <div className="flex flex-wrap gap-2">
             <Button to="/books/new" size="sm" state={{ shelfId: shelf.id }}>
@@ -114,6 +120,7 @@ function ShelfBody({ data }) {
             </Button>
           </div>
         )}
+        </div>
       </header>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -202,6 +209,9 @@ function ShelfBody({ data }) {
       )}
 
 
+      <ShareImageModal open={sharing} onClose={() => setSharing(false)} title="책장 이미지로 저장" filename={`bookmoment-${shelf.name}`}>
+        <ShelfShareCard shelf={shelf} owner={shelf.owner} records={records} decoration={decoration} stats={stats} />
+      </ShareImageModal>
       {isOwner && (
         <>
           <ShelfFormModal

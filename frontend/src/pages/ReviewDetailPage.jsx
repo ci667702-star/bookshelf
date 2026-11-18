@@ -45,9 +45,7 @@ function Body({ data }) {
         {/* 관련 책 */}
         {review.book && (
           <Link to={`/books/${review.book.id}`} className="group mb-8 flex items-center gap-4">
-            <span className="shrink-0 rotate-[-3deg] bg-white p-1.5 pb-4 shadow-[0_6px_14px_-6px_rgba(81,68,61,0.45)] transition group-hover:rotate-0">
-              <BookCover book={review.book} className="h-[88px] w-[62px]" rounded="rounded-[1px]" shadow={false} />
-            </span>
+            <BookCover book={review.book} className="h-[88px] w-[62px] shrink-0 transition-transform group-hover:-translate-y-0.5" />
             <span className="min-w-0">
               <span className="block truncate font-serif text-[16px] font-bold group-hover:underline">{review.book.title}</span>
               <span className="block truncate text-[13px] text-ink-soft">{review.book.author}</span>

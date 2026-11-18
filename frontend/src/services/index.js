@@ -75,6 +75,37 @@ export const sharedApi = {
   removeItem: (id, itemId) => del(`/shared-bookshelves/${id}/items/${itemId}`),
 };
 
+export const quoteApi = {
+  list: (params) => get('/quotes', params),
+  create: (body) => post('/quotes', body),
+  update: (id, body) => put(`/quotes/${id}`, body),
+  remove: (id) => del(`/quotes/${id}`),
+};
+
+export const socialApi = {
+  follow: (userId) => post(`/users/${userId}/follow`),
+  follows: (userId, type) => get(`/users/${userId}/follows`, { type }),
+  feed: () => get('/feed'),
+  badges: () => get('/badges'),
+  badgesSeen: () => post('/badges/seen'),
+};
+
+export const timerApi = {
+  get: () => get('/reading/timer'),
+  start: (recordId) => post(`/reading/${recordId}/timer`),
+  stop: (body) => post('/reading/timer/stop', body),
+  cancel: () => del('/reading/timer'),
+};
+
+/** 다른 사이트 표지를 이미지 저장에 쓰기 위한 서버 프록시 주소 */
+export const proxiedImage = (url) =>
+  url && /^https?:\/\//i.test(url) ? `/api/image-proxy?url=${encodeURIComponent(url)}` : url;
+
+export const bookSearchApi = {
+  search: (q) => get('/book-search', { q }),
+  pages: (isbn) => get('/book-search/pages', { isbn }),
+};
+
 export const miscApi = {
   dashboard: () => get('/dashboard'),
   search: (q, type = 'all') => get('/search', { q, type }),

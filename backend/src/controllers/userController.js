@@ -52,10 +52,20 @@ export async function getProfile(req, res) {
     include: { book: { select: { totalPages: true } } },
   });
   const reviewCount = await prisma.review.count({ where: { userId: id, ...(isMe ? {} : { isPublic: true }) } });
+  const [followerCount, followingCount, followRow] = await Promise.all([
+    prisma.follow.count({ where: { followingId: id } }),
+    prisma.follow.count({ where: { followerId: id } }),
+    req.user && !isMe
+      ? prisma.follow.findUnique({ where: { followerId_followingId: { followerId: req.user.id, followingId: id } } })
+      : null,
+  ]);
 
   res.json({
     user,
     isMe,
+    isFollowing: !!followRow,
+    followerCount,
+    followingCount,
     stats: { ...summarizeRecords(records), reviews: reviewCount },
     shelves: shelves.map((s) => ({
       id: s.id,

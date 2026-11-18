@@ -196,14 +196,16 @@ export async function getCalendar(userId, year, month) {
   ]);
 
   const days = {};
-  const ensure = (key) => (days[key] ??= { date: key, pages: 0, logs: [], finished: [] });
+  const ensure = (key) => (days[key] ??= { date: key, pages: 0, minutes: 0, logs: [], finished: [] });
 
   for (const log of logs) {
     const day = ensure(dateToKey(log.date));
     day.pages += log.pagesRead;
+    day.minutes += log.minutes ?? 0;
     day.logs.push({
       id: log.id,
       pagesRead: log.pagesRead,
+      minutes: log.minutes,
       memo: log.memo,
       isAuto: log.isAuto,
       recordId: log.record.id,
@@ -216,7 +218,7 @@ export async function getCalendar(userId, year, month) {
   }
 
   const readingDayKeys = Object.values(days)
-    .filter((d) => d.pages > 0)
+    .filter((d) => d.pages > 0 || d.minutes > 0)
     .map((d) => d.date)
     .sort();
   let bestStreak = 0;
@@ -238,6 +240,7 @@ export async function getCalendar(userId, year, month) {
     stats: {
       totalPages,
       heightCm: toCm(totalPages),
+      totalMinutes: logs.reduce((m, l) => m + (l.minutes ?? 0), 0),
       readingDays: readingDayKeys.length,
       booksRead: new Set(logs.map((l) => l.readingRecordId)).size,
       finishedCount: finishedRecords.length,

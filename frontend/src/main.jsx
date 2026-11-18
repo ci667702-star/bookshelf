@@ -7,6 +7,13 @@ import { AuthProvider } from './contexts/AuthContext.jsx';
 import { ToastProvider } from './contexts/ToastContext.jsx';
 import './styles/index.css';
 
+// 앱 설치(PWA)용 서비스 워커 — 개발 중에는 캐시가 방해되므로 배포 빌드에서만 등록
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

@@ -7,10 +7,14 @@ import { QueryState } from '../components/ui/States.jsx';
 import { Avatar, SectionTitle } from '../components/ui/Misc.jsx';
 import { ReviewCard } from '../components/review/ReviewParts.jsx';
 import { ShelfCard } from '../components/shelf/ShelfParts.jsx';
+import { FollowButton, FollowCounts } from '../components/social/Follow.jsx';
+import { QuoteNote } from '../components/social/Quotes.jsx';
+import { quoteApi } from '../services/index.js';
 import { formatDateTime, num } from '../utils/format.js';
 
 function Body({ data, id }) {
-  const { user, stats, shelves, isMe } = data;
+  const { user, stats, shelves, isMe, isFollowing } = data;
+  const quotes = useQuery({ queryKey: ['quotes', 'user', id], queryFn: () => quoteApi.list({ scope: 'user', userId: id, limit: 6 }) });
   useDocumentTitle(`${user.nickname}님의 책장`);
   const reviews = useQuery({ queryKey: ['reviews', 'list', 'user', id], queryFn: () => reviewApi.list({ scope: 'user', userId: id, limit: 10 }) });
   return (
@@ -21,6 +25,10 @@ function Body({ data, id }) {
           <h1 className="text-[28px]">{user.nickname}</h1>
           <p className="text-[13px] text-ink-soft">{formatDateTime(user.createdAt)}부터 기록 중</p>
           {user.bio && <p className="mt-2 text-[14.5px]">{user.bio}</p>}
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <FollowCounts profile={data} />
+            {!isMe && <FollowButton userId={user.id} following={isFollowing} size="xs" />}
+          </div>
         </div>
         <dl className="grid grid-cols-3 gap-2 text-center">
           {[
@@ -54,6 +62,17 @@ function Body({ data, id }) {
           </div>
         )}
       </section>
+
+      {quotes.data?.items.length > 0 && (
+        <section>
+          <SectionTitle title="모은 문장" />
+          <div className="grid gap-5 pt-2 sm:grid-cols-2 lg:grid-cols-3">
+            {quotes.data.items.map((q, i) => (
+              <QuoteNote key={q.id} quote={q} index={i} showBook />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <SectionTitle title="독후감" />

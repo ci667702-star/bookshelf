@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Ruler, Settings } from 'lucide-react';
-import { readingApi, reviewApi, userApi } from '../services/index.js';
+import { quoteApi, readingApi, reviewApi, userApi } from '../services/index.js';
+import { BadgeGrid, useBadges } from '../components/social/Badges.jsx';
+import { QuoteModal, QuoteNote, useDeleteQuote } from '../components/social/Quotes.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useDocumentTitle } from '../hooks/index.js';
 import Button from '../components/ui/Button.jsx';
@@ -23,6 +25,10 @@ export default function MyPage() {
     queryFn: () => reviewApi.list({ scope: 'mine', limit: 10 }),
     enabled: tab === 'reviews',
   });
+  const badges = useBadges(tab === 'badges');
+  const quotes = useQuery({ queryKey: ['quotes', 'mine'], queryFn: () => quoteApi.list({ scope: 'mine' }), enabled: tab === 'quotes' });
+  const delQuote = useDeleteQuote();
+  const [editing, setEditing] = useState(null);
   const m = marathon.data;
 
   return (
@@ -75,10 +81,30 @@ export default function MyPage() {
             options={[
               { value: 'shelves', label: '내 책장' },
               { value: 'reviews', label: '내 독후감' },
+              { value: 'quotes', label: '내 문장' },
+              { value: 'badges', label: '배지' },
             ]}
           />
         </div>
-        {tab === 'shelves' ? (
+        {tab === 'badges' ? (
+          <QueryState query={badges}>{(b) => <BadgeGrid badges={b.badges} />}</QueryState>
+        ) : tab === 'quotes' ? (
+          <QueryState query={quotes}>
+            {(r) =>
+              r.items.length === 0 ? (
+                <p className="py-8 text-center text-[13.5px] text-ink-soft">
+                  아직 모은 문장이 없어요. 책 정보 화면의 「문장 모으기」로 시작해 보세요.
+                </p>
+              ) : (
+                <div className="grid gap-5 pt-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {r.items.map((q, i) => (
+                    <QuoteNote key={q.id} quote={q} index={i} showBook onEdit={setEditing} onDelete={(x) => delQuote.mutate(x)} />
+                  ))}
+                </div>
+              )
+            }
+          </QueryState>
+        ) : tab === 'shelves' ? (
           <QueryState query={profile}>
             {(p) => (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -109,6 +135,7 @@ export default function MyPage() {
           </QueryState>
         )}
       </div>
+      <QuoteModal open={!!editing} onClose={() => setEditing(null)} quote={editing} book={editing?.book} />
     </div>
   );
 }

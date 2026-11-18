@@ -31,6 +31,20 @@ export function useDocumentTitle(title) {
 }
 
 /** 바깥 클릭 · Esc 로 닫기 */
+/** 화면 폭 조건 (넓은 화면에서만 옆 패널 데이터를 불러오기 위해) */
+export function useMediaQuery(query) {
+  const get = () => typeof window !== 'undefined' && window.matchMedia(query).matches;
+  const [matches, setMatches] = useState(get);
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = () => setMatches(mql.matches);
+    onChange();
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, [query]);
+  return matches;
+}
+
 export function useDismiss(open, onClose) {
   const ref = useRef(null);
   useEffect(() => {

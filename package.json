@@ -19,7 +19,11 @@
     "dev:web": "npm run dev -w frontend",
     "build": "npm run build -w frontend",
     "start": "npm run start -w backend",
-    "test:smoke": "npm run test:smoke -w backend"
+    "test:smoke": "npm run test:smoke -w backend",
+    "prod:up": "docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build",
+    "prod:down": "docker compose --env-file .env.production -f docker-compose.prod.yml down",
+    "prod:logs": "docker compose --env-file .env.production -f docker-compose.prod.yml logs -f --tail=100 app",
+    "prod:seed": "docker compose --env-file .env.production -f docker-compose.prod.yml exec app npx prisma db seed"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

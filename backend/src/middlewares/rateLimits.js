@@ -18,6 +18,15 @@ export const authLimiter = rateLimit({
   message: message('로그인 시도가 너무 많아요. 15분 후 다시 시도해 주세요.'),
 });
 
+/** 외부 도서 검색 API 할당량 보호 */
+export const bookSearchLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 40,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: message('책 검색을 너무 자주 했어요. 잠시 후 다시 시도해 주세요.'),
+});
+
 /** 초대 코드 무차별 대입 방지 */
 export const joinLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

@@ -11,6 +11,10 @@ r.use(requireAuth);
 r.get('/calendar', validate({ query: c.calendarQuery }), c.calendar);
 r.get('/marathon', c.marathon);
 r.delete('/logs/:logId', validate({ params: c.logIdParam }), c.deleteLog);
+r.get('/timer', c.getTimer);
+r.post('/timer/stop', validate({ body: c.stopTimerSchema }), c.stopTimer);
+r.delete('/timer', c.cancelTimer);
+r.post('/:id/timer', validate({ params: idParam }), c.startTimer);
 
 r.get('/', validate({ query: c.listReadingQuery }), c.listReading);
 r.post('/', validate({ body: c.createReadingSchema }), c.createReading);

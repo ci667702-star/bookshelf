@@ -15,6 +15,8 @@ import MarathonTower from '../components/book/MarathonTower.jsx';
 import MonthGrid from '../components/calendar/MonthGrid.jsx';
 import LogModal from '../components/book/LogModal.jsx';
 import { formatTodayLong, num, progressPct } from '../utils/format.js';
+import { FeedItem, useFeed } from '../components/social/Follow.jsx';
+import { StartTimerButton, useTimer } from '../components/book/Timer.jsx';
 
 function StatTile({ tone, label, value, unit }) {
   return (
@@ -53,6 +55,8 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const q = useQuery({ queryKey: ['dashboard'], queryFn: miscApi.dashboard });
   const [logRecord, setLogRecord] = useState(null);
+  const feed = useFeed();
+  const timer = useTimer();
 
   return (
     <QueryState query={q} loading={<SkeletonBlock className="h-96" />}>
@@ -114,9 +118,12 @@ export default function DashboardPage() {
                           </span>
                         </div>
                       </div>
-                      <Button size="xs" variant="secondary" onClick={() => setLogRecord(r)}>
-                        기록
-                      </Button>
+                      <div className="flex shrink-0 flex-col gap-1 sm:flex-row">
+                        {timer.data?.session?.record?.id !== r.id && <StartTimerButton record={r} size="xs" variant="green" label="타이머" />}
+                        <Button size="xs" variant="secondary" onClick={() => setLogRecord(r)}>
+                          기록
+                        </Button>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -191,25 +198,19 @@ export default function DashboardPage() {
                 )}
               </Widget>
 
-              <Widget title="둘러보기" tone="aqua" icon={Compass} to="/explore" linkLabel="다른 책장 구경하기">
-                <ul className="flex flex-col gap-1 text-[13px]">
-                  <li className="flex justify-between">
-                    <span>공개 책장</span>
-                    <b>{d.recommendations.publicShelves.length}곳</b>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>인기 독후감</span>
-                    <b>{d.recommendations.popularReviews.length}편</b>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>최근 공유된 책</span>
-                    <b>{d.recommendations.recentSharedBooks.length}권</b>
-                  </li>
-                </ul>
-                {d.recommendations.popularReviews[0] && (
-                  <Link to={`/reviews/${d.recommendations.popularReviews[0].id}`} className="mt-2 block truncate rounded-[5px] bg-milk px-2 py-1.5 text-[12.5px] hover:underline">
-                    인기: {d.recommendations.popularReviews[0].title}
-                  </Link>
+              <Widget title="친구 소식" tone="aqua" icon={Compass} to="/explore?tab=feed" linkLabel="친구 소식 · 둘러보기">
+                {!feed.data ? (
+                  <p className="py-3 text-[13px] text-ink-soft">불러오는 중...</p>
+                ) : feed.data.items.length === 0 ? (
+                  <p className="py-3 text-[13px] text-ink-soft">
+                    {feed.data.followingCount ? '친구들의 새 소식이 아직 없어요.' : '다른 독자를 팔로우하면 여기에 소식이 떠요.'}
+                  </p>
+                ) : (
+                  <ul className="divide-y divide-ink/10">
+                    {feed.data.items.slice(0, 3).map((item) => (
+                      <FeedItem key={item.id} item={item} compact />
+                    ))}
+                  </ul>
                 )}
               </Widget>
             </section>

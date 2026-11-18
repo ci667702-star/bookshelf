@@ -11,6 +11,11 @@ const schema = z.object({
   UPLOAD_DIR: z.string().default('uploads'),
   MAX_UPLOAD_MB: z.coerce.number().positive().max(20).default(5),
   APP_TIMEZONE: z.string().default('Asia/Seoul'),
+  // 도서 검색(표지 자동 채우기) — 선택. 설정된 것부터 사용
+  KAKAO_REST_API_KEY: z.string().optional(),
+  NAVER_CLIENT_ID: z.string().optional(),
+  NAVER_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_BOOKS_API_KEY: z.string().optional(),
   COOKIE_SECURE: z
     .enum(['true', 'false'])
     .default('false')

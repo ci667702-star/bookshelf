@@ -242,6 +242,62 @@ async function main() {
   r = await A('POST', '/api/uploads', undefined, { raw: fd });
   check('SVG 확장자 차단 400', r.status === 400, r.body);
 
+  console.log('\n[문장 · 팔로우 · 피드 · 배지 · 타이머]');
+  r = await A('POST', '/api/quotes', { bookId: finishedBookId, content: '마음에 남은 문장', page: 12, isPublic: false });
+  check('비공개 문장 저장', r.status === 201, r.body);
+  const quoteId = r.body.quote?.id;
+  r = await B('GET', `/api/quotes?scope=book&bookId=${finishedBookId}`);
+  check('B → 비공개 문장 안 보임', r.status === 200 && r.body.items.length === 0, r.body);
+  r = await A('PUT', `/api/quotes/${quoteId}`, { isPublic: true });
+  r = await B('GET', `/api/quotes?scope=book&bookId=${finishedBookId}`);
+  check('공개 후 B 에게 보임', r.body.items?.length === 1, r.body);
+  r = await B('PUT', `/api/quotes/${quoteId}`, { content: 'hack' });
+  check('B → A 문장 수정 403', r.status === 403, r.body);
+  r = await A('POST', '/api/quotes', { bookId: finishedBookId, content: '쪽수 초과', page: 99999 });
+  check('책 쪽수보다 큰 페이지 400', r.status === 400, r.body);
+
+  r = await B('POST', `/api/users/${bId}/follow`);
+  check('자기 자신 팔로우 400', r.status === 400, r.body);
+  r = await B('POST', `/api/users/${aId}/follow`);
+  check('B → A 팔로우', r.status === 200 && r.body.following && r.body.followerCount === 1, r.body);
+  r = await B('GET', '/api/feed');
+  check('B 친구 소식에 A 활동', r.status === 200 && r.body.items.some((i) => i.user.id === aId), r.body);
+  r = await B('GET', `/api/users/${aId}`);
+  check('프로필 팔로우 상태', r.body.isFollowing === true && r.body.followerCount === 1, r.body);
+
+  r = await A('GET', '/api/badges');
+  check(
+    '배지: 첫 완독 획득 + 딸기 스티커 해금',
+    r.body.badges?.find((b) => b.key === 'first_finish')?.earned && r.body.unlockedStickers.includes('strawberry'),
+    r.body
+  );
+  const decoWith = (type) => ({
+    theme: 'cream',
+    background: { color: '#FFF9F2', image: null },
+    decorations: [{ id: 'k', kind: 'sticker', type, x: 10, y: 10, rotate: 0, scale: 1 }],
+    layout: { shelfStyle: 'wood', arrangement: 'spine' },
+  });
+  r = await A('PUT', `/api/bookshelves/${shelfId}/decoration`, decoWith('crown'));
+  check('잠긴 스티커(왕관) 사용 403', r.status === 403, r.body);
+  r = await A('PUT', `/api/bookshelves/${shelfId}/decoration`, decoWith('strawberry'));
+  check('해금된 스티커(딸기) 사용', r.status === 200, r.body);
+
+  r = await A('POST', `/api/reading/${readingRecordId}/timer`);
+  check('타이머 시작', r.status === 201 && r.body.session?.record?.id === readingRecordId, r.body);
+  r = await A('POST', `/api/reading/${readingRecordId}/timer`);
+  check('같은 책 다시 시작하면 기존 타이머 유지', r.status === 200, r.body);
+  r = await A('GET', '/api/reading/timer');
+  check('타이머 상태 조회', !!r.body.session, r.body);
+  r = await A('POST', '/api/reading/timer/stop', { pagesRead: 10, memo: '집중!' });
+  check('타이머 정지 → 10쪽 + 시간 기록', r.status === 200 && r.body.record.currentPage === 60 && r.body.minutes >= 1, r.body);
+  r = await A('POST', '/api/reading/timer/stop', { pagesRead: 1 });
+  check('타이머 없을 때 정지 404', r.status === 404, r.body);
+
+  r = await A('GET', `/api/image-proxy?url=${encodeURIComponent('https://example.com/a.png')}`);
+  check('허용 안 된 이미지 주소 차단 400', r.status === 400, r.body);
+  r = await A('GET', `/api/image-proxy?url=${encodeURIComponent('http://169.254.169.254/latest')}`);
+  check('내부 주소 차단(SSRF) 400', r.status === 400, r.body);
+
   console.log('\n[정리]');
   r = await A('POST', '/api/auth/logout');
   r = await A('GET', '/api/auth/me');

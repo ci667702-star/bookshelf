@@ -6,6 +6,8 @@ import { Segmented, StarRating } from '../ui/Misc.jsx';
 import ImageUpload from '../ui/ImageUpload.jsx';
 import Button from '../ui/Button.jsx';
 import BookCover from './BookCover.jsx';
+import BookSearch from './BookSearch.jsx';
+import { bookSearchApi } from '../../services/index.js';
 import { STATUS, STATUS_KEYS } from '../../utils/constants.js';
 import { todayKey } from '../../utils/format.js';
 
@@ -79,6 +81,32 @@ export default function BookForm({ initial, onSubmit, submitting, serverError, s
   }, [serverError]);
 
   const set = (k) => (e) => setF((v) => ({ ...v, [k]: e?.target ? e.target.value : e }));
+  const [filledNote, setFilledNote] = useState('');
+
+  // 검색 결과를 고르면 책 정보를 채운다 (페이지 수는 ISBN 으로 한 번 더 찾아본다)
+  const pickFromSearch = (item) => {
+    setF((v) => ({
+      ...v,
+      title: item.title ?? v.title,
+      author: item.author ?? v.author,
+      publisher: item.publisher ?? '',
+      coverImage: item.coverImage ?? v.coverImage,
+      totalPages: item.totalPages ? String(item.totalPages) : '',
+    }));
+    setErrors({});
+    setFilledNote(item.totalPages ? '책 정보를 채웠어요.' : '책 정보를 채웠어요. 전체 페이지 수를 확인해 주세요.');
+    if (!item.totalPages && item.isbn) {
+      bookSearchApi
+        .pages(item.isbn)
+        .then((res) => {
+          if (res.totalPages) {
+            setF((v) => (v.totalPages ? v : { ...v, totalPages: String(res.totalPages) }));
+            setFilledNote('책 정보를 채웠어요. 페이지 수도 찾았어요.');
+          }
+        })
+        .catch(() => {});
+    }
+  };
 
   const total = Number(f.totalPages) || 0;
   const counted =
@@ -117,6 +145,13 @@ export default function BookForm({ initial, onSubmit, submitting, serverError, s
     <form onSubmit={submit} noValidate className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
       <div className="card flex flex-col gap-5 p-5 sm:p-7">
         <FormError message={serverError && !Object.keys(serverError.fields || {}).length ? serverError.message : null} />
+
+        <BookSearch onPick={pickFromSearch} />
+        {filledNote && (
+          <p role="status" className="-mt-2 text-[12.5px] font-semibold text-matcha-deep">
+            {filledNote}
+          </p>
+        )}
 
         <fieldset className="flex flex-col gap-4">
           <legend className="mb-3 font-serif text-[19px]">책 정보</legend>

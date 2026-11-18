@@ -33,6 +33,8 @@ export function createApp() {
           'connect-src': ["'self'"],
           'object-src': ["'none'"],
           'frame-ancestors': ["'none'"],
+          // https 로 서비스할 때만 http 요청을 https 로 올린다 (http 로 테스트할 때 화면이 깨지지 않도록)
+          'upgrade-insecure-requests': env.COOKIE_SECURE ? [] : null,
         },
       },
       crossOriginResourcePolicy: { policy: 'same-site' },

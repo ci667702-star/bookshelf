@@ -12,7 +12,14 @@ import { Avatar, ProgressBar, Segmented, StarRating, StatusBadge } from '../comp
 import BookCover from '../components/book/BookCover.jsx';
 import LogModal from '../components/book/LogModal.jsx';
 import { ReviewCard } from '../components/review/ReviewParts.jsx';
+import { StartTimerButton, useTimer } from '../components/book/Timer.jsx';
+import { QuoteModal, QuoteNote, useDeleteQuote } from '../components/social/Quotes.jsx';
+import { quoteApi } from '../services/index.js';
 import { formatDay, num, progressPct } from '../utils/format.js';
+
+const QuoteGlyph = () => (
+  <span aria-hidden className="hand text-[20px] leading-none">“</span>
+);
 
 function Body({ data }) {
   const { book, record, isMine, owner, logs, reviews, sharedShelves } = data;
@@ -24,6 +31,11 @@ function Body({ data }) {
   const [deleting, setDeleting] = useState(false);
   const [logToDelete, setLogToDelete] = useState(null);
   const [tab, setTab] = useState(isMine ? 'logs' : 'reviews');
+  const [quoteModal, setQuoteModal] = useState(null); // { quote? }
+  const quotes = useQuery({ queryKey: ['quotes', 'book', book.id], queryFn: () => quoteApi.list({ scope: 'book', bookId: book.id }) });
+  const delQuote = useDeleteQuote();
+  const timer = useTimer();
+  const timerHere = timer.data?.session?.record?.id === record?.id;
 
   const remove = useMutation({
     mutationFn: () => bookApi.remove(book.id),
@@ -55,9 +67,9 @@ function Body({ data }) {
 
       <article className="grid gap-6 md:grid-cols-[220px_1fr]">
         <div className="mx-auto w-[200px] md:w-full">
-          <div className="rotate-[-1.5deg] bg-white p-2.5 pb-8 shadow-[0_14px_28px_-14px_rgba(81,68,61,0.55)]">
-            <BookCover book={book} className="aspect-[3/4] w-full" rounded="rounded-[2px]" shadow={false} />
-            <p className="mt-2.5 text-center hand text-[14px] text-ink-soft">
+          <div>
+            <BookCover book={book} className="aspect-[3/4] w-full" rounded="rounded-[3px_8px_8px_3px]" />
+            <p className="hand mt-2 text-center text-[17px] text-ink-soft">
               {record?.finishDate ? `${formatDay(record.finishDate)} 완독` : record?.startDate ? `${formatDay(record.startDate)}부터` : '읽고 싶은 책'}
             </p>
           </div>
@@ -124,6 +136,10 @@ function Body({ data }) {
 
           {isMine && (
             <div className="mt-7 flex flex-wrap gap-2">
+              {record && record.status !== 'FINISHED' && !timerHere && <StartTimerButton record={{ ...record, book }} />}
+              <Button variant="secondary" onClick={() => setQuoteModal({})}>
+                <QuoteGlyph /> 문장 모으기
+              </Button>
               {record && record.status !== 'FINISHED' && (
                 <Button onClick={() => setLogOpen(true)}>
                   <BookMarked size={15} /> 오늘 읽은 페이지 기록
@@ -149,7 +165,11 @@ function Body({ data }) {
             label="책 정보 보기"
             value={tab}
             onChange={setTab}
-            options={[...(isMine ? [{ value: 'logs', label: `날짜별 기록 ${logs.length}` }] : []), { value: 'reviews', label: `독후감 ${reviews.length}` }]}
+            options={[
+              ...(isMine ? [{ value: 'logs', label: `날짜별 기록 ${logs.length}` }] : []),
+              { value: 'quotes', label: `문장 ${quotes.data?.items.length ?? ''}` },
+              { value: 'reviews', label: `독후감 ${reviews.length}` },
+            ]}
           />
         </div>
         {tab === 'logs' && isMine ? (
@@ -179,6 +199,18 @@ function Body({ data }) {
               ))}
             </ol>
           )
+        ) : tab === 'quotes' ? (
+          !quotes.data?.items.length ? (
+            <p className="py-8 text-center text-[13.5px] text-ink-soft">
+              {isMine ? '마음에 남은 문장을 모아 보세요.' : '공개된 문장이 아직 없어요.'}
+            </p>
+          ) : (
+            <div className="grid gap-5 pt-2 sm:grid-cols-2">
+              {quotes.data.items.map((q, i) => (
+                <QuoteNote key={q.id} quote={q} index={i} showUser={!q.isMine} onEdit={(x) => setQuoteModal({ quote: x })} onDelete={(x) => delQuote.mutate(x)} />
+              ))}
+            </div>
+          )
         ) : reviews.length === 0 ? (
           <p className="py-8 text-center text-[13.5px] text-ink-soft">아직 볼 수 있는 독후감이 없어요.</p>
         ) : (
@@ -190,6 +222,7 @@ function Body({ data }) {
         )}
       </div>
 
+      {isMine && <QuoteModal open={!!quoteModal} onClose={() => setQuoteModal(null)} book={book} quote={quoteModal?.quote} />}
       {isMine && record && <LogModal open={logOpen} onClose={() => setLogOpen(false)} record={{ ...record, book }} />}
       <ConfirmDialog
         open={deleting}

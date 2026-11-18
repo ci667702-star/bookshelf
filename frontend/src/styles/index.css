@@ -78,6 +78,8 @@
   html {
     -webkit-text-size-adjust: 100%;
     scroll-padding-top: 24px;
+    /* 페이지 길이와 상관없이 스크롤바 자리를 항상 확보 → 화면 이동 시 상단 바 · 하단 탭이 흔들리지 않음 */
+    scrollbar-gutter: stable;
   }
   body {
     color: var(--color-ink);

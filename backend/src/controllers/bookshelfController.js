@@ -1,11 +1,13 @@
 import { z } from 'zod';
 import { prisma } from '../utils/prisma.js';
-import { badRequest, unauthorized } from '../utils/httpError.js';
+import { badRequest, forbidden, unauthorized } from '../utils/httpError.js';
+import { unlockedStickers } from '../services/badgeService.js';
 import { publicUserSelect, serializeRecord, serializeReview, reviewInclude } from '../utils/serializers.js';
 import { booleanish, optionalImage, optionalText } from '../utils/validators.js';
 import { getOwnedShelf, getViewableShelf, reviewVisibleWhere } from '../services/accessService.js';
 import { summarizeRecords } from '../services/readingService.js';
 import {
+  REWARD_STICKERS,
   THEMES,
   decorationSchema,
   defaultDecoration,
@@ -194,6 +196,9 @@ export async function getDecoration(req, res) {
 export async function updateDecoration(req, res) {
   const shelf = await getOwnedShelf(req.valid.params.id, req.user.id);
   const data = req.valid.body;
+  const unlocked = await unlockedStickers(req.user.id);
+  const locked = data.decorations.find((d) => d.kind === 'sticker' && REWARD_STICKERS.includes(d.type) && !unlocked.includes(d.type));
+  if (locked) throw forbidden('아직 열리지 않은 스티커예요. 배지를 모으면 쓸 수 있어요.');
   const deco = await prisma.$transaction(async (tx) => {
     const d = await tx.bookshelfDecoration.upsert({
       where: { bookshelfId: shelf.id },

@@ -3,7 +3,9 @@ import { z } from 'zod';
 export const THEMES = ['strawberry', 'cream', 'vintage', 'sky', 'forest', 'lavender'];
 export const SHELF_STYLES = ['wood', 'white', 'pastel', 'scallop'];
 export const ARRANGEMENTS = ['spine', 'cover', 'polaroid'];
-export const STICKERS = ['flower', 'ribbon', 'star', 'heart', 'cat', 'book', 'coffee', 'cloud'];
+// 배지를 얻어야 열리는 스티커
+export const REWARD_STICKERS = ['strawberry', 'letter', 'clover', 'rainbow', 'moon', 'crown'];
+export const STICKERS = ['flower', 'ribbon', 'star', 'heart', 'cat', 'book', 'coffee', 'cloud', ...REWARD_STICKERS];
 export const ITEMS = ['plant', 'lamp', 'frame', 'candle', 'garland'];
 
 export const THEME_DEFAULT_BG = {

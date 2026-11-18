@@ -64,6 +64,7 @@ export function serializeLog(log) {
     date: dateToKey(log.date),
     pagesRead: log.pagesRead,
     memo: log.memo,
+    minutes: log.minutes,
     isAuto: log.isAuto,
     createdAt: log.createdAt,
   };
