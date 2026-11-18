@@ -1,0 +1,13 @@
+**/node_modules
+frontend/dist
+backend/uploads/*
+!backend/uploads/.gitkeep
+**/.env
+**/.env.*
+!**/.env.example
+!.env.production.example
+.git
+.claude
+**/*.log
+Dockerfile
+docker-compose*.yml

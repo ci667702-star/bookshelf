@@ -1,0 +1,352 @@
+// 북모먼트 (BookMoment) 데이터베이스 스키마
+// PostgreSQL + Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReadingStatus {
+  WANT_TO_READ // 읽고 싶은 책
+  READING // 읽는 중
+  FINISHED // 완독
+  STOPPED // 중단
+}
+
+enum MemberRole {
+  OWNER
+  MEMBER
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  JOIN
+  FOLLOW
+}
+
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  passwordHash     String
+  nickname         String   @unique @db.VarChar(20)
+  profileImage     String?
+  bio              String?  @db.VarChar(160)
+  yearlyGoalBooks  Int      @default(12)
+  monthlyGoalPages Int      @default(1000)
+  // 비밀번호 변경 시 증가시켜 기존 토큰을 모두 무효화
+  tokenVersion     Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  bookshelves            Bookshelf[]
+  books                  Book[]
+  readingRecords         ReadingRecord[]
+  readingLogs            ReadingLog[]
+  reviews                Review[]
+  likes                  Like[]
+  comments               Comment[]
+  ownedSharedBookshelves SharedBookshelf[]
+  sharedMemberships      SharedBookshelfMember[]
+  sharedItems            SharedBookshelfItem[]
+  decorations            BookshelfDecoration[]
+  notifications          Notification[]          @relation("NotificationRecipient")
+  actedNotifications     Notification[]          @relation("NotificationActor")
+  quotes                 Quote[]
+  following              Follow[]                @relation("Follower")
+  followers              Follow[]                @relation("Following")
+  badges                 UserBadge[]
+  readingSessions        ReadingSession[]
+}
+
+model Bookshelf {
+  id          String   @id @default(cuid())
+  ownerId     String
+  name        String   @db.VarChar(40)
+  description String?  @db.VarChar(300)
+  coverImage  String?
+  isPublic    Boolean  @default(false)
+  theme       String   @default("cream") @db.VarChar(30)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner      User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  records    ReadingRecord[]
+  decoration BookshelfDecoration?
+
+  @@index([ownerId, createdAt])
+  @@index([isPublic, createdAt])
+}
+
+// 책은 등록한 사용자 소유 (다른 사용자가 수정할 수 없도록)
+model Book {
+  id          String   @id @default(cuid())
+  createdById String
+  title       String   @db.VarChar(200)
+  author      String   @db.VarChar(120)
+  publisher   String?  @db.VarChar(120)
+  coverImage  String?
+  totalPages  Int
+  // 같은 사용자의 동일 도서 중복 등록(=중복 집계) 방지용 정규화 키
+  titleKey    String   @db.VarChar(330)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  records   ReadingRecord[]
+  reviews   Review[]
+  quotes    Quote[]
+
+  @@unique([createdById, titleKey])
+  @@index([title])
+  @@index([author])
+}
+
+model ReadingRecord {
+  id            String        @id @default(cuid())
+  userId        String
+  bookshelfId   String?
+  bookId        String
+  status        ReadingStatus @default(WANT_TO_READ)
+  currentPage   Int           @default(0)
+  rating        Int?
+  oneLineReview String?       @db.VarChar(150)
+  startDate     DateTime?     @db.Date
+  finishDate    DateTime?     @db.Date
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookshelf   Bookshelf?            @relation(fields: [bookshelfId], references: [id], onDelete: SetNull)
+  book        Book                  @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  logs        ReadingLog[]
+  sharedItems SharedBookshelfItem[]
+  sessions    ReadingSession[]
+
+  @@unique([userId, bookId])
+  @@index([bookshelfId])
+  @@index([userId, status])
+  @@index([userId, finishDate])
+}
+
+// 날짜별 독서 기록 (달력 · 이번 달 독서량의 근거)
+// 한 기록의 로그 합계 = 그 기록의 집계 페이지 (서비스 레이어에서 보장)
+model ReadingLog {
+  id              String   @id @default(cuid())
+  readingRecordId String
+  userId          String
+  date            DateTime @db.Date
+  pagesRead       Int
+  memo            String?  @db.VarChar(200)
+  // 독서 타이머로 기록한 경우 읽은 시간(분)
+  minutes         Int?
+  isAuto          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  record ReadingRecord @relation(fields: [readingRecordId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@index([readingRecordId, date])
+}
+
+model Review {
+  id                String   @id @default(cuid())
+  userId            String
+  bookId            String
+  sharedBookshelfId String?
+  title             String   @db.VarChar(100)
+  content           String   @db.Text
+  rating            Int?
+  isPublic          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book            Book             @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  sharedBookshelf SharedBookshelf? @relation(fields: [sharedBookshelfId], references: [id], onDelete: SetNull)
+  likes           Like[]
+  comments        Comment[]
+  notifications   Notification[]
+
+  @@index([userId, createdAt])
+  @@index([bookId])
+  @@index([isPublic, createdAt])
+  @@index([sharedBookshelfId, createdAt])
+}
+
+model SharedBookshelf {
+  id          String   @id @default(cuid())
+  ownerId     String
+  name        String   @db.VarChar(40)
+  description String?  @db.VarChar(300)
+  coverImage  String?
+  inviteCode  String   @unique @db.VarChar(16)
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner         User                    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members       SharedBookshelfMember[]
+  items         SharedBookshelfItem[]
+  reviews       Review[]
+  notifications Notification[]
+
+  @@index([ownerId])
+  @@index([isPublic, createdAt])
+}
+
+model SharedBookshelfMember {
+  id          String     @id @default(cuid())
+  bookshelfId String
+  userId      String
+  role        MemberRole @default(MEMBER)
+  joinedAt    DateTime   @default(now())
+
+  bookshelf SharedBookshelf @relation(fields: [bookshelfId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([bookshelfId, userId])
+  @@index([userId])
+}
+
+// 공유 책장에 꽂힌 책 = 참여자의 독서 기록을 가리킴 (페이지 중복 집계 없음)
+model SharedBookshelfItem {
+  id              String   @id @default(cuid())
+  bookshelfId     String
+  readingRecordId String
+  addedById       String
+  createdAt       DateTime @default(now())
+
+  bookshelf SharedBookshelf @relation(fields: [bookshelfId], references: [id], onDelete: Cascade)
+  record    ReadingRecord   @relation(fields: [readingRecordId], references: [id], onDelete: Cascade)
+  addedBy   User            @relation(fields: [addedById], references: [id], onDelete: Cascade)
+
+  @@unique([bookshelfId, readingRecordId])
+  @@index([addedById])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  reviewId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reviewId])
+  @@index([reviewId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  userId    String
+  reviewId  String
+  content   String   @db.VarChar(500)
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId, createdAt])
+}
+
+model BookshelfDecoration {
+  id          String   @id @default(cuid())
+  userId      String
+  bookshelfId String   @unique
+  theme       String   @default("cream") @db.VarChar(30)
+  // { color: "#FFF9F2", image: "/uploads/..." | null }
+  background  Json
+  // [{ id, type: "flower" | "ribbon" ..., x: 0~100, y: 0~100, rotate, scale }]
+  decorations Json
+  // { shelfStyle: "wood" | ..., arrangement: "cover" | "spine" | "polaroid" }
+  layout      Json
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookshelf Bookshelf @relation(fields: [bookshelfId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Notification {
+  id                String           @id @default(cuid())
+  userId            String
+  actorId           String
+  type              NotificationType
+  reviewId          String?
+  sharedBookshelfId String?
+  isRead            Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+
+  user            User             @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor           User             @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  review          Review?          @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  sharedBookshelf SharedBookshelf? @relation(fields: [sharedBookshelfId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+}
+
+// 인상 깊은 문장 (밑줄 긋기)
+model Quote {
+  id        String   @id @default(cuid())
+  userId    String
+  bookId    String
+  content   String   @db.VarChar(500)
+  page      Int?
+  memo      String?  @db.VarChar(200)
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([bookId, createdAt])
+  @@index([isPublic, createdAt])
+}
+
+// 친구 팔로우 (follower 가 following 을 팔로우)
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+}
+
+// 획득한 배지 (조건은 서버 코드에 정의, 여기엔 획득 시각만 기록)
+model UserBadge {
+  id       String    @id @default(cuid())
+  userId   String
+  badgeKey String    @db.VarChar(40)
+  earnedAt DateTime  @default(now())
+  seenAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeKey])
+}
+
+// 진행 중인 독서 타이머 (사용자당 하나, 새로고침해도 유지)
+model ReadingSession {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  readingRecordId String
+  startedAt       DateTime @default(now())
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  record ReadingRecord @relation(fields: [readingRecordId], references: [id], onDelete: Cascade)
+}

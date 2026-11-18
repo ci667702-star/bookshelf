@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: bookmoment-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bookmoment
+      POSTGRES_PASSWORD: bookmoment_local_only
+      POSTGRES_DB: bookmoment
+    ports:
+      - "5433:5432"
+    volumes:
+      - bookmoment-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookmoment -d bookmoment"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  bookmoment-pgdata:
