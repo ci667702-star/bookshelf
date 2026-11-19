@@ -1,5 +1,8 @@
 # 북모먼트 배포 이미지 — API 서버가 빌드된 웹 화면(frontend/dist)까지 함께 제공한다.
 #   docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+#
+# 빌드 중에 apt-get 을 쓰지 않는다. (학교 · 회사망처럼 http(80) 가 막힌 서버에서도 빌드되도록)
+# Prisma 가 필요로 하는 OpenSSL 라이브러리는 같은 Debian(bookworm) 기반 full 이미지에서 복사해 온다.
 
 # ── 1단계: 웹 화면 빌드 ──
 FROM node:22-bookworm-slim AS web
@@ -11,21 +14,24 @@ RUN npm ci
 COPY frontend frontend
 RUN npm run build -w frontend
 
-# ── 2단계: 서버 실행에 필요한 패키지만 설치 ──
-FROM node:22-bookworm-slim AS api
-RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+# ── 2단계: 서버 패키지 설치 + Prisma 클라이언트 생성 ──
+# full 이미지에는 OpenSSL 3 이 들어 있어서 Prisma 가 알맞은 엔진(debian-openssl-3.0.x)을 고른다
+FROM node:22-bookworm AS api
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY backend/package.json backend/
 COPY frontend/package.json frontend/
 RUN npm ci --omit=dev -w backend
 COPY backend backend
-RUN cd backend && npx prisma generate
+RUN cd backend && npx prisma generate \
+ && mkdir -p /ssl \
+ && cp /usr/lib/$(uname -m)-linux-gnu/libssl.so.3 /usr/lib/$(uname -m)-linux-gnu/libcrypto.so.3 /ssl/
 
-# ── 3단계: 실행 ──
+# ── 3단계: 실행 (작은 slim 이미지 + OpenSSL 라이브러리 두 개만) ──
 FROM node:22-bookworm-slim
-RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
+COPY --from=api /ssl/ /tmp/ssl/
+RUN cp /tmp/ssl/* /usr/lib/$(uname -m)-linux-gnu/ && rm -rf /tmp/ssl && ldconfig
 WORKDIR /app
 COPY --from=api --chown=node:node /app /app
 COPY --from=web --chown=node:node /app/frontend/dist /app/frontend/dist
