@@ -20,7 +20,9 @@ services:
     # DB 포트는 바깥에 열지 않는다 (앱 컨테이너만 접속)
 
   app:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       db:
