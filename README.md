@@ -235,6 +235,8 @@ nano .env.production   # 값 채우고 Ctrl+O, Enter, Ctrl+X 로 저장
 | `MAX_UPLOAD_MB` | `5` | 사진 업로드 최대 용량 |
 | `KAKAO_REST_API_KEY` 등 | (선택) | 책 검색 키. [책 검색 API 키](#책-검색-api-키-선택--무료) 참고. 네이버는 서비스 URL 에 배포 주소도 등록하세요 |
 | `APP_BIND` / `APP_PORT` | `127.0.0.1` / `4000` | 앱이 열리는 곳. 그대로 두면 서버 안에서만 열리고 Caddy 가 https 로 연결해요 |
+| `RDB_DATABASE` / `RDB_USERNAME` | (비우면 `bookmoment`) | DB 이름 · 사용자 이름. **처음 실행하기 전에만** 정하세요. 이미 만든 DB 에는 나중에 바꿔도 적용되지 않아요 |
+| `RDB_URL` | (보통 비워 둠) | 외부 DB(예: AWS RDS)를 쓸 때만 전체 주소. 비워 두면 함께 뜨는 db 컨테이너를 써요 |
 
 > `.env.production` 은 git 에 올라가지 않아요. 비밀번호와 키가 들어 있으니 다른 사람과 공유하지 마세요.
 
@@ -356,6 +358,7 @@ cat backup-2026-11-19.sql | docker compose --env-file .env.production -f docker-
 ```
 
 > 볼륨 이름(`bookmoment_uploads`)은 폴더 이름을 따라가요. `docker volume ls` 로 확인할 수 있어요.
+> `RDB_USERNAME` / `RDB_DATABASE` 를 바꿨다면 위 명령의 `-U bookmoment bookmoment` 를 `-U 사용자이름 DB이름` 으로 바꿔 주세요.
 > 매일 자동 백업을 원하면 `crontab -e` 에 위 백업 명령을 등록해 두세요.
 
 ### 자주 쓰는 운영 명령
@@ -432,6 +435,7 @@ cd backend && pm2 start src/server.js --name bookmoment && pm2 save && pm2 start
 | 바코드 카메라가 안 켜져요 | https 주소인지, 브라우저에서 카메라 권한을 허용했는지 확인하세요 |
 | 한국 책이 검색에 안 나와요 | 카카오 또는 네이버 키를 넣고 `dc up -d` 로 다시 시작하세요 |
 | 빌드하다 서버가 멈춰요 | 메모리가 부족해요. 2GB 이상 서버를 쓰거나 스왑을 추가하세요 |
+| 빌드 중 `npm ci` 가 `ETIMEDOUT` · 무한 대기로 멈춰요 | 학교 · 회사망처럼 MTU 가 작은 네트워크일 수 있어요. `/etc/docker/daemon.json` 에 `{ "mtu": 1400 }` 을 넣고 `sudo systemctl restart docker` 한 뒤 다시 빌드하세요. (이 Dockerfile 은 `apt-get` 을 쓰지 않아서 http(80) 이 막힌 곳에서도 빌드돼요) |
 
 ---
 
