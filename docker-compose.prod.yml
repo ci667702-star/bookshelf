@@ -7,9 +7,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: bookmoment
+      POSTGRES_USER: ${RDB_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?.env.production 에 POSTGRES_PASSWORD 를 넣어 주세요}
-      POSTGRES_DB: bookmoment
+      POSTGRES_DB: ${RDB_DATABASE}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -29,7 +29,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
-      DATABASE_URL: postgresql://bookmoment:${POSTGRES_PASSWORD}@db:5432/bookmoment?schema=public
+      DATABASE_URL: 
       UPLOAD_DIR: uploads
     ports:
       # 기본은 서버 안에서만 접속 가능(127.0.0.1) → 앞단의 Caddy/Nginx 가 https 로 연결
@@ -40,3 +40,8 @@ services:
 volumes:
   pgdata:
   uploads:
+
+networks:
+  default:
+    driver_opts:
+      com.docker.network.driver.mtu: 1400
