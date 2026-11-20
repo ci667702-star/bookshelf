@@ -5,14 +5,14 @@
 # Prisma 가 필요로 하는 OpenSSL 라이브러리는 같은 Debian(bookworm) 기반 full 이미지에서 복사해 온다.
 
 # ── 1단계: 웹 화면 빌드 ──
-# FROM node:22-bookworm-slim AS web
-# WORKDIR /app
-# COPY package.json package-lock.json ./
-# COPY backend/package.json backend/
-# COPY frontend/package.json frontend/
-# RUN npm ci
-# COPY frontend frontend
-# RUN npm run build -w frontend
+FROM node:22-bookworm-slim AS web
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY backend/package.json backend/
+COPY frontend/package.json frontend/
+RUN npm ci
+COPY frontend frontend
+RUN npm run build -w frontend
 
 # ── 2단계: 서버 패키지 설치 + Prisma 클라이언트 생성 ──
 # full 이미지에는 OpenSSL 3 이 들어 있어서 Prisma 가 알맞은 엔진(debian-openssl-3.0.x)을 고른다

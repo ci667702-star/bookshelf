@@ -57,9 +57,10 @@ React · Node.js(Express) · PostgreSQL(Prisma)로 만든 **실제로 동작하�
 
 ```
 .
-├─ docker-compose.yml          # 개발용 PostgreSQL (내 컴퓨터 포트 5433)
-├─ docker-compose.prod.yml     # 배포용: 앱 + PostgreSQL 한 번에
-├─ Dockerfile                  # 배포용 앱 이미지 (API 서버가 웹 화면까지 제공)
+├─ docker-compose.yml          # 개발용 PostgreSQL (내 컴퓨터 포트 5432)
+├─ docker-compose.prod.yml     # 배포용: API 서버 + PostgreSQL (기본은 Dockerfile.prod 사용)
+├─ Dockerfile.prod             # 배포용 API 전용 이미지 (웹 화면은 Vercel)
+├─ Dockerfile                  # 배포용 통합 이미지 (API 서버가 웹 화면까지 제공)
 ├─ .env.production.example     # 배포용 설정값 예시
 ├─ package.json                # npm workspaces + 공통 명령어
 ├─ backend/
@@ -78,6 +79,7 @@ React · Node.js(Express) · PostgreSQL(Prisma)로 만든 **실제로 동작하�
 │  │  └─ server.js
 │  └─ .env.example             # 개발용 설정값 예시
 └─ frontend/
+   ├─ vercel.json              # Vercel 설정: /api · /uploads 를 API 서버로 전달
    ├─ public/                  # 파비콘 · 앱 아이콘 · manifest · 서비스 워커
    ├─ scripts/generate-icons.mjs  # 앱 아이콘 PNG 만들기
    └─ src/
@@ -166,11 +168,118 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
 ## 배포하기 (서버에 올리기)
 
-### 어떻게 돌아가나요?
+배포 방법은 두 가지예요. **지금 `docker-compose.prod.yml` 은 방법 A(API 서버만 띄우기)가 기본**이에요.
+
+| 방법 | 웹 화면 | API · DB | 이럴 때 좋아요 |
+| --- | --- | --- | --- |
+| **A. Vercel + API 서버** (기본) | Vercel | 내 서버(Docker) | 웹은 Vercel 로 무료 · 빠르게, 서버에는 API 만 |
+| **B. 한 서버에 모두** | 내 서버(Docker) | 내 서버(Docker) | 도메인 하나 + 서버 하나로 끝내고 싶을 때 |
+
+### 방법 A. Vercel(웹) + 서버(API)로 나눠 배포하기
+
+```
+사용자 브라우저 ──https──▶ Vercel (https://○○.vercel.app)
+                            │  웹 화면은 Vercel 이 바로 제공
+                            │  /api/*, /uploads/* 요청만 서버로 대신 전달 (frontend/vercel.json)
+                            ▼
+                    내 서버 :8080 ── app 컨테이너 (API) ── db 컨테이너 (PostgreSQL)
+```
+
+- 브라우저는 **Vercel 주소 하나만** 보기 때문에 로그인 쿠키가 그대로 동작해요. (웹이 다른 주소의 API 를 직접 부르면 아이폰 Safari 등에서 로그인 쿠키가 막혀요)
+- 프론트엔드 코드는 바꿀 필요가 없어요. API 주소는 `frontend/vercel.json` 한 곳에만 적어요.
+
+#### A-1. 서버에서 API 띄우기
+
+```bash
+git clone https://github.com/ci667702-star/bookshelf.git bookshelf && cd bookshelf
+cp .env.production.example .env.production
+nano .env.production
+```
+
+`.env.production` 에서 꼭 정할 값:
+
+| 설정 | 값 | 설명 |
+| --- | --- | --- |
+| `POSTGRES_PASSWORD` | `openssl rand -hex 24` 결과 | DB 비밀번호 (영문 · 숫자만) |
+| `JWT_SECRET` | `openssl rand -hex 48` 결과 | 로그인 토큰 서명 키 |
+| `CLIENT_ORIGIN` | `https://○○.vercel.app` | Vercel 주소. 아직 모르면 일단 두고, A-3 뒤에 고쳐서 다시 실행 |
+| `COOKIE_SECURE` | `true` | 사용자는 https(Vercel)로 접속하니까 `true` |
+| `API_PORT` / `APP_BIND` | `8080` / `0.0.0.0` | Vercel 이 이 포트로 요청을 넘겨줘요 |
+| `TRUST_PROXY` | `1` | Vercel → API 바로 연결이면 1, 사이에 Caddy · Cloudflare Tunnel 이 있으면 2 |
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+docker compose --env-file .env.production -f docker-compose.prod.yml ps   # app, db 모두 (healthy)
+curl http://127.0.0.1:8080/api/health                                     # {"ok":true}
+```
+
+이 설정은 `Dockerfile.prod`(API 전용 이미지)를 써요. 웹 화면은 빌드하지 않아서 빌드가 빠르고, `http://서버주소:8080/` 은 404 가 정상이에요.
+
+#### A-2. Vercel 이 서버에 닿을 수 있게 하기
+
+Vercel 은 인터넷 쪽에서 서버로 요청을 보내요. 둘 중 하나를 고르세요.
+
+**① 공인 IP + 8080 포트 열기 (간단)**
+- 서버 방화벽에서 8080 을 열어요: `sudo ufw allow 8080/tcp` (클라우드라면 보안 그룹에서도)
+- 다른 컴퓨터에서 `http://서버공인IP:8080/api/health` 가 열리면 OK
+- ⚠️ Vercel ↔ 서버 구간이 **http(암호화 안 됨)** 라서, 로그인 비밀번호가 그 구간을 그대로 지나가요. 테스트용으로만 쓰고 실제 서비스는 ②를 추천해요.
+
+**② Cloudflare Tunnel (추천 · 무료 · https · 포트 안 열어도 됨)**
+학교 · 회사망처럼 바깥에서 서버로 들어올 수 없는 곳에서도 동작해요.
+
+```bash
+# cloudflared 설치 (Ubuntu, amd64)
+curl -L -o cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+sudo dpkg -i cloudflared.deb
+
+# 테스트용 임시 주소 받기 → 출력되는 https://○○○.trycloudflare.com 을 메모
+cloudflared tunnel --url http://localhost:8080
+```
+
+- 임시 주소는 cloudflared 를 다시 켤 때마다 바뀌어요. 고정 주소가 필요하면 Cloudflare 계정에 도메인을 연결하고 [이름 있는 터널](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/)을 만들어 서비스로 등록하세요.
+- 이 방법을 쓰면 `.env.production` 에서 `APP_BIND=127.0.0.1`, `TRUST_PROXY=2` 로 바꾸고 A-1 의 실행 명령을 다시 실행하세요.
+
+#### A-3. Vercel 에 웹 화면 올리기
+
+1. `frontend/vercel.json` 에서 `http://API-SERVER-ADDRESS:8080` 두 곳을 A-2 에서 정한 서버 주소로 바꿔요.
+   - ① 이면 `http://서버공인IP:8080` / ② 면 `https://○○○.trycloudflare.com` (포트 없이)
+2. 바꾼 파일을 커밋하고 GitHub 에 푸시해요.
+3. [vercel.com](https://vercel.com) → **Add New → Project** → 이 저장소를 Import 하고 아래처럼 설정해요.
+
+   | 항목 | 값 |
+   | --- | --- |
+   | Root Directory | `frontend` |
+   | Framework Preset | `Vite` |
+   | Build Command | `npm run build` |
+   | Output Directory | `dist` |
+   | Environment Variables | 필요 없음 |
+
+4. **Deploy** → 배포가 끝나면 나온 주소(`https://○○.vercel.app`)를 서버 `.env.production` 의 `CLIENT_ORIGIN` 에 넣고 A-1 의 실행 명령을 다시 실행해요.
+5. Vercel 주소로 들어가 회원가입 → 로그아웃 → 다시 로그인이 되면 완료예요.
+
+> `vercel.json` 을 고치면 GitHub 에 푸시할 때마다 Vercel 이 자동으로 다시 배포해요.
+
+#### 방법 A 에서 알아 둘 것
+
+- **사진 업로드 크기**: Vercel 을 거치는 요청은 아주 크면 막힐 수 있어요. `.env.production` 의 `MAX_UPLOAD_MB=4` 정도를 추천해요.
+- **바코드 카메라 · 앱 설치**: Vercel 이 https 라서 그대로 동작해요.
+- **API 를 다시 배포할 때**: 서버에서 `git pull` 후 A-1 실행 명령. 웹만 바꿨다면 푸시만 하면 Vercel 이 알아서 배포해요.
+- 로그인이 안 되면: 서버 `CLIENT_ORIGIN` 이 Vercel 주소와 같은지, `vercel.json` 의 서버 주소가 맞는지, 서버에서 `docker compose ... logs app` 에 오류가 없는지 확인하세요.
+
+---
+
+### 방법 B. 한 서버에서 웹 + API 모두 제공하기
+
+방법 B 로 하려면 먼저 두 군데를 바꿔요.
+
+- `docker-compose.prod.yml` 의 `dockerfile: Dockerfile.prod` → `dockerfile: Dockerfile` (웹 화면까지 빌드하는 이미지)
+- `.env.production` 에서 `APP_BIND=127.0.0.1`, `CLIENT_ORIGIN=https://내도메인` (앞에 Caddy 를 두니 `TRUST_PROXY=2`)
+
+#### 어떻게 돌아가나요?
 
 ```
 사용자 브라우저 ──https──▶ Caddy (또는 Nginx)        ← 인증서 자동 발급 · https 처리
-                            │ 127.0.0.1:4000
+                            │ 127.0.0.1:8080
                             ▼
                     app 컨테이너 (Node.js)           ← API + 빌드된 웹 화면을 같이 제공
                      │            │                     시작할 때 DB 변경(마이그레이션) 자동 적용
@@ -183,15 +292,15 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 - **https 가 꼭 필요해요.** 로그인 쿠키 보안(`COOKIE_SECURE=true`), 바코드 카메라, 앱 설치(PWA)는 모두 https 에서만 동작해요.
 - DB 와 업로드 사진은 Docker 볼륨에 저장돼서, 앱을 다시 빌드 · 재시작해도 사라지지 않아요.
 
-### 준비물
+#### 준비물
 
 | 항목 | 설명 |
 | --- | --- |
 | 리눅스 서버 1대 | Ubuntu 22.04 / 24.04 권장. 메모리 **2GB 이상** 권장(빌드할 때 메모리를 꽤 써요), 디스크 10GB 이상. AWS Lightsail, 네이버 클라우드, Oracle Cloud 무료 서버 등 어디든 OK |
 | 도메인 | 예: `bookmoment.example.com`. 도메인 관리 화면에서 **A 레코드**를 서버 공인 IP 로 연결 |
-| 열어 둘 포트 | **22**(SSH), **80**(http · 인증서 발급), **443**(https). 클라우드 방화벽(보안 그룹)에서 열어 주세요. 4000번은 열지 않아도 돼요 |
+| 열어 둘 포트 | **22**(SSH), **80**(http · 인증서 발급), **443**(https). 클라우드 방화벽(보안 그룹)에서 열어 주세요. 방법 B 는 8080 을 열 필요가 없고, 방법 A 를 공인 IP 로 연결할 때만 8080 을 열어요 |
 
-### 방법 1. Docker 로 배포하기 (추천)
+#### 방법 B 단계별 안내 (Docker)
 
 #### 1단계 — 서버에 Docker 설치
 
@@ -234,7 +343,8 @@ nano .env.production   # 값 채우고 Ctrl+O, Enter, Ctrl+X 로 저장
 | `APP_TIMEZONE` | `Asia/Seoul` | "오늘", "이번 달" 계산 기준 |
 | `MAX_UPLOAD_MB` | `5` | 사진 업로드 최대 용량 |
 | `KAKAO_REST_API_KEY` 등 | (선택) | 책 검색 키. [책 검색 API 키](#책-검색-api-키-선택--무료) 참고. 네이버는 서비스 URL 에 배포 주소도 등록하세요 |
-| `APP_BIND` / `APP_PORT` | `127.0.0.1` / `4000` | 앱이 열리는 곳. 그대로 두면 서버 안에서만 열리고 Caddy 가 https 로 연결해요 |
+| `API_PORT` / `APP_BIND` | `8080` / `127.0.0.1` | 앱이 열리는 곳. 서버 안에서만 열고 Caddy 가 https 로 연결해요 |
+| `TRUST_PROXY` | `2` | 앞에 Caddy 를 두면 2 (사용자 실제 IP 를 알아내 로그인 횟수 제한에 써요) |
 | `RDB_DATABASE` / `RDB_USERNAME` | (비우면 `bookmoment`) | DB 이름 · 사용자 이름. **처음 실행하기 전에만** 정하세요. 이미 만든 DB 에는 나중에 바꿔도 적용되지 않아요 |
 | `RDB_URL` | (보통 비워 둠) | 외부 DB(예: AWS RDS)를 쓸 때만 전체 주소. 비워 두면 함께 뜨는 db 컨테이너를 써요 |
 
@@ -253,7 +363,7 @@ docker compose --env-file .env.production -f docker-compose.prod.yml up -d --bui
 docker compose --env-file .env.production -f docker-compose.prod.yml ps
 
 # 서버 안에서 응답 확인 → {"ok":true}
-curl http://127.0.0.1:4000/api/health
+curl http://127.0.0.1:8080/api/health
 
 # 로그 보기 (Ctrl+C 로 나가기)
 docker compose --env-file .env.production -f docker-compose.prod.yml logs -f app
@@ -278,7 +388,7 @@ bookmoment.example.com {
     request_body {
         max_size 10MB
     }
-    reverse_proxy 127.0.0.1:4000
+    reverse_proxy 127.0.0.1:8080
 }
 ```
 
@@ -304,7 +414,7 @@ server {
     client_max_body_size 10m;
 
     location / {
-        proxy_pass http://127.0.0.1:4000;
+        proxy_pass http://127.0.0.1:8080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -380,12 +490,13 @@ https 없이 확인만 해 보려면 `.env.production` 에서 아래처럼 바�
 ```
 CLIENT_ORIGIN=http://localhost:18080
 COOKIE_SECURE=false
-APP_PORT=18080
+API_PORT=18080
+APP_BIND=127.0.0.1
 ```
 
 그다음 <http://localhost:18080> 을 열면 돼요. (Windows 는 일부 포트가 예약돼 있어서, 포트가 막히면 다른 번호를 쓰세요.)
 
-### 방법 2. Docker 없이 배포하기 (Node + PostgreSQL 직접 설치)
+### 방법 C. Docker 없이 배포하기 (Node + PostgreSQL 직접 설치)
 
 ```bash
 # 1) Node.js 22 와 PostgreSQL 설치 (Ubuntu)
@@ -413,7 +524,7 @@ sudo npm install -g pm2
 cd backend && pm2 start src/server.js --name bookmoment && pm2 save && pm2 startup
 ```
 
-그다음 [5단계](#5단계--도메인-연결하고-https-켜기-caddy)처럼 Caddy 나 Nginx 로 https 를 붙이면 돼요. 업로드 사진은 `backend/uploads` 폴더에 저장되니 백업할 때 같이 챙겨 주세요.
+그다음 [5단계](#5단계--도메인-연결하고-https-켜기-caddy)처럼 Caddy 나 Nginx 로 https 를 붙이면 돼요(이 방법은 `backend/.env` 의 `PORT`, 기본 4000 으로 연결). 업로드 사진은 `backend/uploads` 폴더에 저장되니 백업할 때 같이 챙겨 주세요.
 
 ### 배포 후 확인할 것
 

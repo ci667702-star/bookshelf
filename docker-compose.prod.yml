@@ -1,6 +1,7 @@
-# 배포용: 앱(API + 웹 화면) + PostgreSQL 을 한 번에 실행
+# 배포용: API 서버 + PostgreSQL (웹 화면은 Vercel 에 따로 배포)
 #   docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
 # 설정값은 .env.production 에 (.env.production.example 참고)
+# 웹 화면까지 이 서버에서 같이 제공하려면 app.build.dockerfile 을 Dockerfile 로 바꾸세요.
 
 services:
   db:
@@ -23,7 +24,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     restart: unless-stopped
     depends_on:
       db:
@@ -31,12 +32,13 @@ services:
     env_file: .env.production
     environment:
       NODE_ENV: production
-      PORT: ${API_PORT}
+      PORT: ${API_PORT:-8080}
       # RDB_URL 을 넣으면 그 DB(예: 외부 RDS)를 쓰고, 비워 두면 위 db 컨테이너 주소를 자동으로 만든다
       DATABASE_URL: ${RDB_URL:-postgresql://${RDB_USERNAME:-bookmoment}:${POSTGRES_PASSWORD}@db:5432/${RDB_DATABASE:-bookmoment}?schema=public}
       UPLOAD_DIR: uploads
     ports:
-      - "8080:8080"
+      # Vercel 이 이 포트로 요청을 넘겨준다. 앞에 Caddy · Cloudflare Tunnel 을 두면 APP_BIND=127.0.0.1
+      - "${APP_BIND:-0.0.0.0}:${API_PORT:-8080}:${API_PORT:-8080}"
     volumes:
       - uploads:/app/backend/uploads
 
