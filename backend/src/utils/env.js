@@ -14,6 +14,7 @@ const schema = z.object({
   // 앞단 프록시 개수 (Vercel 바로 연결 1, Vercel → Caddy · Cloudflare Tunnel → API 는 2)
   TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(1),
   // 도서 검색(표지 자동 채우기) — 선택. 설정된 것부터 사용
+  NLK_API_KEY: z.string().optional(),
   KAKAO_REST_API_KEY: z.string().optional(),
   NAVER_CLIENT_ID: z.string().optional(),
   NAVER_CLIENT_SECRET: z.string().optional(),

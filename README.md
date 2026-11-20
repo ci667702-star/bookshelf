@@ -139,16 +139,21 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
 ### 책 검색 API 키 (선택 · 무료)
 
-교보문고는 공개 API 가 없어서 아래 서비스를 써요. `backend/.env` 에 키를 넣으면 **카카오 → 네이버 → Google Books → Open Library** 순서로 검색해요.
-키가 없어도 검색은 되지만(Open Library) **한국 책은 거의 안 나오니 카카오나 네이버 키를 추천**해요. 둘 다 무료이고 카드 등록이 필요 없어요.
+교보문고는 공개 API 가 없어서 아래 서비스를 써요. `backend/.env` 에 키를 넣으면 **국립중앙도서관 → 카카오 → 네이버 → Google Books → Open Library** 순서로 검색해요. 앞에서 결과가 없거나 연결이 안 되면 다음 서비스로 넘어가요.
+키가 없어도 검색은 되지만(Open Library) **한국 책은 거의 안 나오니 국립중앙도서관 · 카카오 · 네이버 중 하나는 추천**해요. 모두 무료이고 카드 등록이 필요 없어요.
 
 | 서비스 | 발급 방법 | 넣을 곳 |
 | --- | --- | --- |
+| 국립중앙도서관 ISBN 서지정보 | [nl.go.kr](https://www.nl.go.kr) 회원가입 · 로그인 → 도서관 서비스 → 이용자 → *Open API* → *인증키 신청/관리* 에서 신청 | `NLK_API_KEY` |
 | 카카오 책 검색 | [developers.kakao.com](https://developers.kakao.com) → 내 애플리케이션 → 앱 추가 → 앱 키의 *REST API 키* | `KAKAO_REST_API_KEY` |
 | 네이버 책 검색 | [developers.naver.com](https://developers.naver.com) → Application → 애플리케이션 등록 → 사용 API *검색*, 환경 *WEB* (서비스 URL 은 내 주소) | `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET` |
 | Google Books | Google Cloud 콘솔의 Books API 키 (선택, 요청 제한 완화) | `GOOGLE_BOOKS_API_KEY` |
 
 키는 서버에만 있고 브라우저로는 넘어가지 않아요. 키를 바꾼 뒤에는 백엔드를 다시 켜 주세요.
+
+- **국립중앙도서관**은 국내에서 ISBN 을 받은 책의 제목 · 저자 · 출판사에 **쪽수까지** 채워 줘요. 다만 출판사가 표지를 올리지 않은 책은 표지가 비어 있어요(그런 책은 제목으로 표지를 그려 줘요).
+- 바코드로 찍은 ISBN 은 국립중앙도서관에서 ISBN 으로 바로 찾고, 제목으로 못 찾으면 저자 이름으로 한 번 더 찾아요.
+- 키가 틀리면 서버 로그에 `[book-search] 외부 도서 검색 실패 — nlk: NLK-011` 처럼 떠요(011 = 인증키 오류, 010 = 키 누락). 다음 서비스가 대신 검색해요.
 
 ### 자주 쓰는 명령어
 
@@ -159,6 +164,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 | `npm run db:migrate` | DB 구조 변경 만들기 · 적용 (개발) |
 | `npm run db:seed` | 데모 데이터 넣기 |
 | `npm run db:reset` | DB 비우고 처음부터 다시 (데모 데이터 포함) |
+| `npm test -w backend` | 책 검색 변환 단위 테스트 (DB · 외부 API 없이) |
 | `npm run test:smoke` | 켜져 있는 API 에 86개 통합 검사 실행 |
 | `npm run build` | 웹 화면 빌드 (`frontend/dist`) |
 | `npm start` | 배포 모드로 서버 실행 (빌드된 웹 화면까지 제공) |
@@ -342,7 +348,7 @@ nano .env.production   # 값 채우고 Ctrl+O, Enter, Ctrl+X 로 저장
 | `COOKIE_SECURE` | `true` | https 로 서비스하면 꼭 `true` |
 | `APP_TIMEZONE` | `Asia/Seoul` | "오늘", "이번 달" 계산 기준 |
 | `MAX_UPLOAD_MB` | `5` | 사진 업로드 최대 용량 |
-| `KAKAO_REST_API_KEY` 등 | (선택) | 책 검색 키. [책 검색 API 키](#책-검색-api-키-선택--무료) 참고. 네이버는 서비스 URL 에 배포 주소도 등록하세요 |
+| `NLK_API_KEY` · `KAKAO_REST_API_KEY` 등 | (선택) | 책 검색 키. [책 검색 API 키](#책-검색-api-키-선택--무료) 참고. 네이버는 서비스 URL 에 배포 주소도 등록하세요 |
 | `API_PORT` / `APP_BIND` | `8080` / `127.0.0.1` | 앱이 열리는 곳. 서버 안에서만 열고 Caddy 가 https 로 연결해요 |
 | `TRUST_PROXY` | `2` | 앞에 Caddy 를 두면 2 (사용자 실제 IP 를 알아내 로그인 횟수 제한에 써요) |
 | `RDB_DATABASE` / `RDB_USERNAME` | (비우면 `bookmoment`) | DB 이름 · 사용자 이름. **처음 실행하기 전에만** 정하세요. 이미 만든 DB 에는 나중에 바꿔도 적용되지 않아요 |
@@ -599,6 +605,9 @@ cd backend && pm2 start src/server.js --name bookmoment && pm2 save && pm2 start
 ## 테스트
 
 ```bash
+# 책 검색 변환 단위 테스트 — DB · 외부 API 없이 바로 돌아가요
+npm test -w backend
+
 # 개발 서버(npm run dev)가 켜진 상태에서
 npm run test:smoke
 

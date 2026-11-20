@@ -12,6 +12,7 @@ const ALLOWED_HOSTS = [
   /^books\.google\.com$/,
   /^books\.googleusercontent\.com$/,
   /^covers\.openlibrary\.org$/,
+  /^www\.nl\.go\.kr$/,
   /^[a-z0-9-]+\.us\.archive\.org$/,
   /^archive\.org$/,
 ];
