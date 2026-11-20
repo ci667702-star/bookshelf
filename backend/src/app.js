@@ -18,7 +18,8 @@ const frontendDist = path.resolve(__dirname, '../../frontend/dist');
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
-  app.set('trust proxy', 1);
+  // 사용자 실제 IP(요청 횟수 제한에 사용)를 X-Forwarded-For 에서 몇 단계까지 믿을지
+  app.set('trust proxy', env.TRUST_PROXY);
 
   app.use(
     helmet({
