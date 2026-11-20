@@ -13,6 +13,7 @@
     "db:reset": "prisma migrate reset --force",
     "db:studio": "prisma studio",
     "prisma:generate": "prisma generate",
+    "test": "node --test \"test/*.test.js\"",
     "test:smoke": "node scripts/smoke-test.js"
   },
   "prisma": {
