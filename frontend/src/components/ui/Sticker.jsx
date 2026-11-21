@@ -1,6 +1,6 @@
 // 손으로 오린 듯한 스티커 & 장식 아이템 (모두 인라인 SVG — 팔레트 색만 사용)
 
-const S = { stroke: '#51443D', strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' };
+const S = { stroke: '#233E7C', strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' };
 
 const STICKERS = {
   flower: (
@@ -28,8 +28,8 @@ const STICKERS = {
         d="M32 9 L38.47 24.1 L54.83 25.58 L42.46 36.4 L46.11 52.42 L32 44 L17.89 52.42 L21.54 36.4 L9.17 25.58 L25.53 24.1 Z"
         fill="#F8E3A0"
       />
-      <circle cx="27.5" cy="34" r="1.6" fill="#51443D" stroke="none" />
-      <circle cx="36.5" cy="34" r="1.6" fill="#51443D" stroke="none" />
+      <circle cx="27.5" cy="34" r="1.6" fill="#233E7C" stroke="none" />
+      <circle cx="36.5" cy="34" r="1.6" fill="#233E7C" stroke="none" />
       <path d="M30 38 q2 2 4 0" fill="none" strokeWidth="1.8" />
     </g>
   ),
@@ -52,8 +52,8 @@ const STICKERS = {
       <path d="M45.5 15 L44.5 22 L40 19 Z" fill="#F5D8D8" stroke="none" />
       <circle cx="21" cy="40" r="3.2" fill="#F5D8D8" stroke="none" />
       <circle cx="43" cy="40" r="3.2" fill="#F5D8D8" stroke="none" />
-      <circle cx="25" cy="33.5" r="2.6" fill="#51443D" stroke="none" />
-      <circle cx="39" cy="33.5" r="2.6" fill="#51443D" stroke="none" />
+      <circle cx="25" cy="33.5" r="2.6" fill="#233E7C" stroke="none" />
+      <circle cx="39" cy="33.5" r="2.6" fill="#233E7C" stroke="none" />
       <path d="M30 38.5 L34 38.5 L32 41 Z" fill="#E59C99" strokeWidth="1.5" />
       <path d="M32 41 q-2 3 -5 2 M32 41 q2 3 5 2" fill="none" strokeWidth="1.8" />
       <path d="M7 36 L16 37 M8 42 L16 40 M57 36 L48 37 M56 42 L48 40" fill="none" strokeWidth="1.6" />
@@ -131,7 +131,7 @@ const STICKERS = {
     <g {...S}>
       <path d="M40 9 A23 23 0 1 0 55 44 A18 18 0 1 1 40 9 Z" fill="#F8E3A0" />
       <path d="M48 14 l1.5 3.5 3.5 1.5 -3.5 1.5 -1.5 3.5 -1.5 -3.5 -3.5 -1.5 3.5 -1.5 Z" fill="#fff" strokeWidth="1.5" />
-      <circle cx="24" cy="34" r="1.6" fill="#51443D" stroke="none" />
+      <circle cx="24" cy="34" r="1.6" fill="#233E7C" stroke="none" />
       <path d="M27 40 q 3 2 6 0" fill="none" strokeWidth="1.8" />
     </g>
   ),
@@ -208,7 +208,7 @@ function Garland() {
 }
 
 const DIECUT =
-  'drop-shadow(1.6px 0 0 #fff) drop-shadow(-1.6px 0 0 #fff) drop-shadow(0 1.6px 0 #fff) drop-shadow(0 -1.6px 0 #fff) drop-shadow(0 3px 3px rgba(81,68,61,0.22))';
+  'drop-shadow(1.6px 0 0 #fff) drop-shadow(-1.6px 0 0 #fff) drop-shadow(0 1.6px 0 #fff) drop-shadow(0 -1.6px 0 #fff) drop-shadow(0 3px 3px rgba(35,62,124,0.22))';
 
 export default function Sticker({ kind = 'sticker', type, className = 'h-14 w-14', title, diecut = true }) {
   const isGarland = kind === 'item' && type === 'garland';

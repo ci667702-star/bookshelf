@@ -4,7 +4,7 @@ import { Flag } from 'lucide-react';
 import { readingApi } from '../services/index.js';
 import { useDocumentTitle } from '../hooks/index.js';
 import { QueryState, SkeletonBlock } from '../components/ui/States.jsx';
-import { ProgressBar } from '../components/ui/Misc.jsx';
+import { ProgressBar, StatTile } from '../components/ui/Misc.jsx';
 import MarathonTower, { MILESTONES, milestoneInfo } from '../components/book/MarathonTower.jsx';
 import { num } from '../utils/format.js';
 
@@ -36,13 +36,7 @@ export default function MarathonPage() {
                   ['완독한 책', m.finishedCount, '권', 'bg-matcha'],
                   ['이번 달', num(m.monthPages), '쪽', 'bg-lilac'],
                 ].map(([label, v, u, tone]) => (
-                  <div key={label} className={`tile ${tone} p-3`}>
-                    <p className="text-[12px] font-semibold text-ink/70">{label}</p>
-                    <p className="flex items-baseline gap-1">
-                      <span className="numeral text-[22px]">{v}</span>
-                      <span className="text-[12px] font-bold">{u}</span>
-                    </p>
-                  </div>
+                  <StatTile key={label} tone={tone} label={label} value={v} unit={u} />
                 ))}
               </div>
 
@@ -81,7 +75,7 @@ export default function MarathonPage() {
                     return (
                       <li
                         key={x.cm}
-                        className={`flex items-center justify-between rounded-[5px] px-2.5 py-1.5 text-[13px] ${
+                        className={`flex items-center justify-between rounded-[3px] px-2.5 py-1.5 text-[13px] ${
                           done ? 'bg-matcha' : isNext ? 'border-[1.5px] border-dashed border-ink/50 bg-butter' : 'text-ink-soft'
                         }`}
                       >
@@ -89,7 +83,7 @@ export default function MarathonPage() {
                           {done ? '✓ ' : ''}
                           {x.label}
                         </span>
-                        <span className="font-pixel text-[12px]">{x.cm}cm</span>
+                        <span className="text-[12px]">{x.cm}cm</span>
                       </li>
                     );
                   })}

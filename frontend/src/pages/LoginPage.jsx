@@ -41,11 +41,11 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthWindow title="로그인.exe">
+    <AuthWindow title="북모먼트 로그인">
       <h1 className="text-[26px]">다시 책장 앞으로</h1>
       <p className="mt-1 mb-6 text-[14px] text-ink-soft">오늘 읽은 한 페이지를 기록해 볼까요?</p>
       {location.state?.expired && !serverError && (
-        <p className="mb-4 rounded-[8px] bg-butter/70 px-4 py-3 text-[13px]">로그인이 만료되었어요. 다시 로그인해 주세요.</p>
+        <p className="mb-4 rounded-[3px] bg-butter/70 px-4 py-3 text-[13px]">로그인이 만료되었어요. 다시 로그인해 주세요.</p>
       )}
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         <FormError message={serverError?.message} />
@@ -83,7 +83,7 @@ export default function LoginPage() {
             type="checkbox"
             checked={form.remember}
             onChange={(e) => setForm({ ...form, remember: e.target.checked })}
-            className="h-4 w-4 accent-cocoa-deep"
+            className="h-4 w-4 accent-ink"
           />
           로그인 상태 유지 (30일)
         </label>
@@ -93,7 +93,7 @@ export default function LoginPage() {
       </form>
       <p className="mt-6 text-center text-[13.5px] text-ink-soft">
         아직 계정이 없나요?{' '}
-        <Link to="/signup" state={location.state} className="font-semibold text-cocoa-deep underline underline-offset-4">
+        <Link to="/signup" state={location.state} className="font-semibold text-link underline underline-offset-4">
           회원가입
         </Link>
       </p>

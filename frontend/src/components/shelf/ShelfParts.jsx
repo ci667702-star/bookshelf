@@ -56,7 +56,7 @@ export function SharedShelfCard({ shelf }) {
       to={`/shared/${shelf.id}`}
       className="card group flex gap-4 p-4 transition-shadow hover:shadow-[var(--shadow-lift)]"
     >
-      <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-[8px] bg-matcha">
+      <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-[3px] bg-matcha">
         {shelf.coverImage ? (
           <img src={shelf.coverImage} alt="" className="h-full w-full object-cover" />
         ) : (
@@ -79,7 +79,7 @@ export function SharedShelfCard({ shelf }) {
           ) : null}
           <span>참여자 {shelf.memberCount}명</span>
           <span>책 {shelf.bookCount}권</span>
-          {shelf.isOwner && <span className="font-semibold text-cocoa-deep">내가 만든 책장</span>}
+          {shelf.isOwner && <span className="font-semibold text-link">내가 만든 책장</span>}
         </div>
       </div>
     </Link>
@@ -168,7 +168,7 @@ export function ShelfFormModal({ open, onClose, initial, onSubmit, submitting, e
                     onClick={() => setF({ ...f, theme: k })}
                     aria-pressed={f.theme === k}
                     className={`flex items-center gap-2 rounded-xl border-[1.5px] px-2.5 py-2 text-[12.5px] font-semibold transition ${
-                      f.theme === k ? 'border-cocoa bg-milk' : 'border-kraft-deep/70 hover:border-cocoa/50'
+                      f.theme === k ? 'border-ink bg-milk' : 'border-kraft-deep/70 hover:border-ink/50'
                     }`}
                   >
                     <span className="h-5 w-5 shrink-0 rounded-full border border-ink/15" style={{ background: `linear-gradient(135deg, ${THEMES[k].bg} 50%, ${THEMES[k].plank} 50%)` }} />

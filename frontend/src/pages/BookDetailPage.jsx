@@ -108,8 +108,8 @@ function Body({ data }) {
           ) : null}
 
           {record?.oneLineReview && (
-            <blockquote className="relative mt-5 rounded-[8px] border-[1.5px] border-ink/85 bg-rose/50 px-5 py-4 text-[15px] leading-relaxed">
-              <span className="absolute -top-4 left-3 hand text-[44px] leading-none text-cocoa/60" aria-hidden>
+            <blockquote className="relative mt-5 rounded-[3px] border-[1.5px] border-ink/85 bg-rose/50 px-5 py-4 text-[15px] leading-relaxed">
+              <span className="absolute -top-4 left-3 hand text-[44px] leading-none text-rose-deep" aria-hidden>
                 “
               </span>
               {record.oneLineReview}
@@ -126,7 +126,7 @@ function Body({ data }) {
                   독서 마라톤 <b className="text-ink">{(record.countedPages * 0.01).toFixed(2)}cm</b>
                 </span>
               </div>
-              <ProgressBar value={pct} tone={record.status === 'FINISHED' ? 'bg-matcha-deep' : 'bg-cocoa'} label="읽은 비율" />
+              <ProgressBar value={pct} tone={record.status === 'FINISHED' ? 'bg-matcha-deep' : 'bg-ink'} label="읽은 비율" />
               <p className="mt-2 text-[12.5px] text-ink-soft">
                 {record.startDate && `${formatDay(record.startDate, { withYear: true })} 시작`}
                 {record.finishDate && ` · ${formatDay(record.finishDate, { withYear: true })} 완독`}
@@ -182,7 +182,7 @@ function Body({ data }) {
               {logs.map((l) => (
                 <li key={l.id} className="card relative flex items-center gap-3 px-3.5 py-2">
                   <span className="absolute top-1/2 -left-[27px] h-3 w-3 -translate-y-1/2 rounded-full border-[1.5px] border-ink bg-rose" aria-hidden />
-                  <span className="w-16 shrink-0 font-pixel text-[12px] text-ink-soft">{formatDay(l.date)}</span>
+                  <span className="w-16 shrink-0 font-serif text-[12px] text-ink-soft">{formatDay(l.date)}</span>
                   <span className="min-w-0 flex-1 text-[13.5px]">
                     <b>{l.pagesRead}쪽</b>
                     {l.memo && <span className="text-ink-soft"> — {l.memo}</span>}
@@ -191,7 +191,7 @@ function Body({ data }) {
                   <button
                     onClick={() => setLogToDelete(l)}
                     aria-label={`${formatDay(l.date)} 기록 삭제`}
-                    className="rounded-[4px] p-1 text-ink-soft transition hover:bg-rose hover:text-berry"
+                    className="rounded-[3px] p-1 text-ink-soft transition hover:bg-rose hover:text-berry"
                   >
                     <X size={15} />
                   </button>

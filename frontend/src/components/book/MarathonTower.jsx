@@ -34,7 +34,7 @@ const MAJOR_STEPS = [0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
 export default function MarathonTower({ stack = [], totalPages = 0, heightCm = 0, maxHeight = 300, animate = true, compact = false }) {
   if (!stack.length || totalPages <= 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 rounded-[8px] bg-milk px-4 py-10 text-center">
+      <div className="flex flex-col items-center justify-center gap-2 rounded-[3px] bg-milk px-4 py-10 text-center">
         <div className="flex h-24 items-end gap-3">
           <div className="ruler-ticks h-24 w-6 rounded-sm bg-butter" style={{ '--tick-major': '24px' }} />
           <div className="h-3 w-24 rounded-sm border-[1.5px] border-dashed border-kraft-deep" />
@@ -86,8 +86,8 @@ export default function MarathonTower({ stack = [], totalPages = 0, heightCm = 0
 
       {/* 책탑 */}
       <div className="relative flex min-w-0 flex-1 flex-col items-center">
-        <div className="mb-2 flex items-center gap-1.5 rounded-full border-[1.5px] border-ink/80 bg-paper px-3 py-1 shadow-[2px_2px_0_rgba(81,68,61,0.8)]">
-          <span className={`numeral text-cocoa-deep ${compact ? 'text-[18px]' : 'text-[24px]'} leading-none`}>{heightCm}</span>
+        <div className="mb-2 flex items-center gap-1.5 rounded-full border-[1.5px] border-ink/80 bg-paper px-3 py-1 shadow-[var(--shadow-page)]">
+          <span className={`numeral text-ink ${compact ? 'text-[18px]' : 'text-[24px]'} leading-none`}>{heightCm}</span>
           <span className="text-[12px] font-bold text-ink-soft">cm</span>
         </div>
         <span className="mb-1 h-3 w-px border-l-[1.5px] border-dashed border-ink/40" aria-hidden />

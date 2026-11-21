@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { useDocumentTitle } from '../hooks/index.js';
 import Button from '../components/ui/Button.jsx';
 import { QueryState } from '../components/ui/States.jsx';
-import { Avatar, Segmented } from '../components/ui/Misc.jsx';
+import { Avatar, Segmented, StatTile } from '../components/ui/Misc.jsx';
 import { ReviewCard } from '../components/review/ReviewParts.jsx';
 import { ShelfCard } from '../components/shelf/ShelfParts.jsx';
 import { formatDateTime, num } from '../utils/format.js';
@@ -59,16 +59,10 @@ export default function MyPage() {
           ['독서 높이', m ? m.heightCm : '–', 'cm', 'bg-sky'],
           ['올해 목표', m ? `${m.goals.yearlyRate}` : '–', '%', 'bg-lilac'],
         ].map(([label, v, u, tone]) => (
-          <div key={label} className={`tile ${tone} px-3 py-2.5`}>
-            <p className="text-[12px] font-semibold text-ink/70">{label}</p>
-            <p className="flex items-baseline gap-1">
-              <span className="numeral text-[22px]">{v}</span>
-              <span className="text-[12px] font-bold">{u}</span>
-            </p>
-          </div>
+          <StatTile key={label} tone={tone} label={label} value={v} unit={u} />
         ))}
       </section>
-      <Link to="/marathon" className="-mt-3 inline-flex items-center gap-1.5 self-start font-pixel text-[12.5px] text-link hover:underline">
+      <Link to="/marathon" className="-mt-3 inline-flex items-center gap-1.5 self-start text-[12.5px] text-link hover:underline">
         <Ruler size={14} /> 독서 마라톤 책탑 보기 ›
       </Link>
 

@@ -19,7 +19,7 @@ export function ReviewCard({ review, showBook = true, compact = false }) {
         <BookCover book={review.book} className={`shrink-0 ${compact ? 'h-16 w-12' : 'h-24 w-[68px]'}`} />
       )}
       <div className="flex min-w-0 flex-1 flex-col">
-        {showBook && review.book && <p className="truncate text-[12px] font-semibold text-cocoa">{review.book.title}</p>}
+        {showBook && review.book && <p className="truncate text-[12px] font-semibold text-link">{review.book.title}</p>}
         <h3 className={`font-serif ${compact ? 'text-[16px]' : 'text-[18px]'} leading-snug text-ink`}>
           <Link to={`/reviews/${review.id}`} className="after:absolute after:inset-0 hover:underline decoration-rose-deep decoration-2 underline-offset-4">
             {review.title}
@@ -40,7 +40,7 @@ export function ReviewCard({ review, showBook = true, compact = false }) {
             <MessageCircle size={13} /> {review.commentCount}
           </span>
           {!review.isPublic && (
-            <span className="flex items-center gap-0.5 text-cocoa-deep">
+            <span className="flex items-center gap-0.5 text-pin">
               <Lock size={12} /> 비공개
             </span>
           )}
@@ -146,11 +146,11 @@ export function CommentSection({ reviewId }) {
       ) : q.isError ? (
         <p className="text-[13.5px] text-berry">{q.error.message}</p>
       ) : items.length === 0 ? (
-        <p className="rounded-[8px] bg-milk px-4 py-6 text-center text-[13.5px] text-ink-soft">첫 댓글을 남겨 보세요.</p>
+        <p className="rounded-[3px] bg-milk px-4 py-6 text-center text-[13.5px] text-ink-soft">첫 댓글을 남겨 보세요.</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {items.map((c) => (
-            <li key={c.id} className="flex gap-3 rounded-[8px] bg-milk px-4 py-3">
+            <li key={c.id} className="flex gap-3 rounded-[3px] bg-milk px-4 py-3">
               <Link to={`/users/${c.user.id}`} aria-label={`${c.user.nickname} 프로필`}>
                 <Avatar user={c.user} size={32} />
               </Link>

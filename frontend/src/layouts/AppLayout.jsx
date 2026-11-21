@@ -2,8 +2,8 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft,
   Bell,
+  BookOpen,
   BookPlus,
   CalendarDays,
   Compass,
@@ -22,7 +22,7 @@ import {
 import { LogoMark } from '../components/ui/Logo.jsx';
 import { Avatar } from '../components/ui/Misc.jsx';
 import { PageLoader, Spinner } from '../components/ui/States.jsx';
-import Window from '../components/ui/Window.jsx';
+import Window, { Ribbon } from '../components/ui/Window.jsx';
 import Modal from '../components/ui/Modal.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
@@ -90,7 +90,10 @@ const NOTI_TEXT = {
 };
 
 const popupCls =
-  'absolute z-50 animate-pop overflow-hidden rounded-[6px] border-[1.5px] border-ink/85 bg-paper shadow-[4px_4px_0_rgba(81,68,61,0.85)]';
+  'absolute z-50 animate-pop overflow-hidden rounded-[3px] border-[1.5px] border-ink/85 bg-paper shadow-[var(--shadow-page)]';
+const iconBtnCls =
+  'relative grid h-9 w-9 place-items-center rounded-[3px] border-[1.5px] border-ink/85 bg-paper text-ink transition hover:bg-rose/50 active:translate-y-px';
+const menuItemCls = 'flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13.5px] transition hover:bg-rose/50';
 
 function Notifications() {
   const [open, setOpen] = useState(false);
@@ -116,18 +119,21 @@ function Notifications() {
         onClick={() => setOpen((v) => !v)}
         aria-label={`알림${unread ? ` ${unread}개 안 읽음` : ''}`}
         aria-expanded={open}
-        className="relative grid h-9 w-9 place-items-center rounded-[5px] border-[1.5px] border-ink/85 bg-paper bevel transition hover:bg-milk"
+        className={iconBtnCls}
       >
         <Bell size={17} />
         {unread > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full border-[1.5px] border-paper bg-pin px-1 font-pixel text-[10px] font-bold text-white">
+          <span className="absolute -top-1.5 -right-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full border-[1.5px] border-paper bg-pin px-1 text-[10px] font-bold text-white">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
       {open && (
         <div className={`${popupCls} top-11 right-0 w-[min(340px,calc(100vw-24px))]`}>
-          <div className="flex h-9 items-center border-b-[1.5px] border-ink/85 bg-butter px-3 font-pixel text-[13px] font-bold">알림</div>
+          <div className="px-3 pt-2.5">
+            <p className="font-serif text-[15.5px] font-bold">알림</p>
+            <div className="rule-book mt-1.5 h-[5px] border-t-2 text-ink/85" aria-hidden />
+          </div>
           <div className="max-h-[360px] overflow-y-auto">
             {q.isPending ? (
               <div className="grid place-items-center py-8">
@@ -185,11 +191,11 @@ function ProfileMenu() {
       </button>
       {open && (
         <div className={`${popupCls} top-11 right-0 w-48 py-1`}>
-          <p className="truncate px-3 pt-1 pb-2 font-pixel text-[13px] font-bold">{user?.nickname}</p>
-          <Link to="/me" onClick={close} className="flex items-center gap-2 px-3 py-2 text-[13.5px] hover:bg-link hover:text-white">
+          <p className="truncate border-b border-ink/15 px-3 pt-1 pb-2 font-serif text-[14.5px] font-bold">{user?.nickname}</p>
+          <Link to="/me" onClick={close} className={menuItemCls}>
             <UserRound size={15} /> 마이페이지
           </Link>
-          <Link to="/settings" onClick={close} className="flex items-center gap-2 px-3 py-2 text-[13.5px] hover:bg-link hover:text-white">
+          <Link to="/settings" onClick={close} className={menuItemCls}>
             <Settings size={15} /> 설정
           </Link>
           <button
@@ -199,7 +205,7 @@ function ProfileMenu() {
               toast.success('로그아웃했어요.');
               navigate('/');
             }}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13.5px] text-berry hover:bg-rose/50"
+            className={`${menuItemCls} text-berry`}
           >
             <LogOut size={15} /> 로그아웃
           </button>
@@ -214,11 +220,11 @@ function AppBar() {
   const navigate = useNavigate();
   const [q, setQ] = useState('');
   return (
-    <header className="sticky top-0 z-30 border-b-[1.5px] border-ink/85 bg-chrome bevel">
+    <header className="sticky top-0 z-30 border-b-[2.5px] border-ink/90 bg-chrome shadow-[0_2px_0_0_var(--color-milk),0_3px_0_0_rgb(35_62_124/0.6)]">
       <div className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-3 sm:px-4 xl:max-w-[1260px] 2xl:max-w-[1760px]">
         <Link to="/dashboard" className="flex shrink-0 items-center gap-2" aria-label="북모먼트 홈">
           <LogoMark className="h-8 w-8" />
-          <span className="wordmark hidden text-[17px] text-cocoa-deep sm:inline">북모먼트</span>
+          <span className="wordmark hidden text-[21px] text-ink sm:inline">북모먼트</span>
         </Link>
         <form
           role="search"
@@ -244,7 +250,7 @@ function AppBar() {
           <Link
             to="/search"
             aria-label="검색"
-            className="grid h-9 w-9 place-items-center rounded-[5px] border-[1.5px] border-ink/85 bg-paper bevel md:hidden"
+            className={`${iconBtnCls} md:hidden`}
           >
             <Search size={17} />
           </Link>
@@ -264,7 +270,7 @@ function Clock() {
   }, []);
   const h = now.getHours();
   return (
-    <time dateTime={now.toISOString()} className="hidden rounded-[4px] px-2 py-1 font-pixel text-[12px] bevel-in sm:block">
+    <time dateTime={now.toISOString()} className="hidden shrink-0 px-1 font-serif text-[13px] font-semibold text-ink-soft tabular-nums sm:block">
       {h < 12 ? '오전' : '오후'} {String(h % 12 || 12).padStart(2, '0')}:{String(now.getMinutes()).padStart(2, '0')}
     </time>
   );
@@ -276,17 +282,17 @@ function InstallHelp({ open, onClose }) {
     <Modal open={open} onClose={onClose} title="북모먼트를 앱으로 설치하기" tone="aqua" size="sm">
       <ul className="flex flex-col gap-3 text-[14px] leading-relaxed">
         <li>
-          <b className="font-pixel">아이폰 · 아이패드 (Safari)</b>
+          <b className="font-serif">아이폰 · 아이패드 (Safari)</b>
           <br />
           아래쪽 <b>공유</b> 버튼 → <b>홈 화면에 추가</b>
         </li>
         <li>
-          <b className="font-pixel">안드로이드 (Chrome)</b>
+          <b className="font-serif">안드로이드 (Chrome)</b>
           <br />
           오른쪽 위 <b>⋮</b> → <b>앱 설치</b> 또는 <b>홈 화면에 추가</b>
         </li>
         <li>
-          <b className="font-pixel">컴퓨터 (Chrome · Edge)</b>
+          <b className="font-serif">컴퓨터 (Chrome · Edge)</b>
           <br />
           주소창 오른쪽의 <b>설치</b> 아이콘
         </li>
@@ -310,36 +316,33 @@ function TabBar() {
     <InstallHelp open={installHelp} onClose={() => setInstallHelp(false)} />
     <nav
       aria-label="하단 메뉴"
-      className="fixed inset-x-0 bottom-0 z-30 border-t-[1.5px] border-ink/85 bg-chrome bevel pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-30 border-t-[2.5px] border-ink/90 bg-chrome pb-[env(safe-area-inset-bottom)]"
     >
+      <div className="absolute inset-x-0 top-[2px] h-px bg-ink/45" aria-hidden />
       <div className="mx-auto flex h-16 max-w-5xl items-center gap-1 px-2 sm:gap-2 sm:px-4">
         <div ref={ref} className="relative">
           <button
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-haspopup="menu"
-            className={`flex h-11 items-center gap-1.5 rounded-[5px] border-[1.5px] border-ink/85 bg-chrome px-2.5 font-pixel text-[13px] font-bold ${open ? 'bevel-in' : 'bevel'}`}
+            className={`flex h-11 items-center gap-1.5 rounded-[3px] border-[1.5px] border-ink/85 px-2.5 text-[13px] font-bold transition ${
+              open ? 'bg-ink text-milk' : 'bg-paper text-ink hover:bg-rose/50'
+            }`}
           >
-            <LogoMark className="h-6 w-6" /> 시작
+            <BookOpen size={17} strokeWidth={2.2} /> 목차
           </button>
           {open && (
             <div role="menu" className={`${popupCls} bottom-[52px] left-0 flex w-64`}>
-              <div className="flex w-8 items-end justify-center bg-cocoa-deep py-3" aria-hidden>
-                <span className="rotate-180 font-pixel text-[13px] font-bold whitespace-nowrap text-milk [writing-mode:vertical-rl]">BookMoment</span>
+              <div className="flex w-9 justify-center bg-ink pt-3" aria-hidden>
+                <span className="font-serif text-[14px] font-extrabold tracking-[0.2em] text-rose [writing-mode:vertical-rl]">북모먼트</span>
               </div>
               <div className="flex-1 py-1">
                 <div className="flex items-center gap-2 border-b border-ink/15 px-3 py-2">
                   <Avatar user={user} size={28} />
-                  <span className="truncate font-pixel text-[12.5px] font-bold">{user?.nickname}</span>
+                  <span className="truncate font-serif text-[14px] font-bold">{user?.nickname}</span>
                 </div>
                 {START_ITEMS.map((i) => (
-                  <Link
-                    key={i.to}
-                    role="menuitem"
-                    to={i.to}
-                    onClick={close}
-                    className="flex items-center gap-2.5 px-3 py-2 text-[13.5px] hover:bg-link hover:text-white"
-                  >
+                  <Link key={i.to} role="menuitem" to={i.to} onClick={close} className={menuItemCls}>
                     <i.icon size={16} /> {i.label}
                   </Link>
                 ))}
@@ -351,7 +354,7 @@ function TabBar() {
                       if (pwa.canPrompt) await pwa.install();
                       else setInstallHelp(true);
                     }}
-                    className="flex w-full items-center gap-2.5 border-t border-ink/15 px-3 py-2 text-left text-[13.5px] hover:bg-link hover:text-white"
+                    className={`${menuItemCls} border-t border-ink/15`}
                   >
                     <Smartphone size={16} /> 앱으로 설치
                   </button>
@@ -363,7 +366,7 @@ function TabBar() {
                     await logout();
                     navigate('/');
                   }}
-                  className="flex w-full items-center gap-2.5 border-t border-ink/15 px-3 py-2 text-left text-[13.5px] text-berry hover:bg-rose/50"
+                  className={`${menuItemCls} border-t border-ink/15 text-berry`}
                 >
                   <LogOut size={16} /> 로그아웃
                 </button>
@@ -372,7 +375,7 @@ function TabBar() {
           )}
         </div>
 
-        <span className="mx-0.5 h-8 w-px bg-chrome-dark" aria-hidden />
+        <span className="mx-0.5 h-8 w-px bg-ink/20" aria-hidden />
 
         <div className="flex flex-1 items-center justify-around gap-1 sm:justify-center sm:gap-2">
           {TABS.map((t) => (
@@ -381,17 +384,22 @@ function TabBar() {
               to={t.to}
               end={t.to === '/books/new'}
               className={({ isActive }) =>
-                `flex h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[5px] font-pixel text-[11px] sm:max-w-[104px] sm:flex-row sm:gap-1.5 sm:text-[12.5px] ${
+                `relative flex h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[3px] text-[11px] font-semibold sm:max-w-[104px] sm:flex-row sm:gap-1.5 sm:text-[12.5px] ${
                   t.primary
-                    ? 'border-[1.5px] border-ink/85 bg-rose bevel'
+                    ? 'border-[1.5px] border-ink bg-ink text-milk shadow-[var(--shadow-misprint)] active:translate-y-px'
                     : isActive
-                      ? 'border-[1.5px] border-ink/60 bg-paper bevel-in text-ink'
-                      : 'border-[1.5px] border-transparent text-ink-soft hover:text-ink'
+                      ? 'text-ink'
+                      : 'text-ink-soft hover:text-ink'
                 }`
               }
             >
-              <t.icon size={18} strokeWidth={2.2} />
-              {t.label}
+              {({ isActive }) => (
+                <>
+                  {isActive && !t.primary && <Ribbon tone="rose" className="absolute -top-[10px] h-[18px] w-[10px]" />}
+                  <t.icon size={18} strokeWidth={isActive && !t.primary ? 2.5 : 2.1} />
+                  {t.label}
+                </>
+              )}
             </NavLink>
           ))}
         </div>
@@ -426,14 +434,7 @@ export default function AppLayout() {
       <div className="mx-auto max-w-5xl px-2.5 pt-4 pb-28 sm:px-4 sm:pt-6 xl:grid xl:max-w-[1260px] xl:grid-cols-[minmax(0,1fr)_280px] xl:gap-5 2xl:max-w-[1760px] 2xl:grid-cols-[270px_minmax(0,1fr)_290px]">
         {xwide && <LeftRail className="hidden 2xl:block" />}
         <main id="main" className="min-w-0">
-          <Window
-            title={`${screen.title} - 북모먼트`}
-            tone={screen.tone}
-            icon={screen.top ? screen.icon : ArrowLeft}
-            menu={menu}
-            closeTo={location.pathname === '/dashboard' ? undefined : '/dashboard'}
-            bodyClassName="p-3.5 sm:p-6"
-          >
+          <Window title={screen.title} tone={screen.tone} size="lg" menu={menu} bodyClassName="p-3.5 pt-5 sm:p-7">
             <Suspense fallback={<PageLoader label="페이지를 펼치는 중..." />}>
               <Outlet />
             </Suspense>

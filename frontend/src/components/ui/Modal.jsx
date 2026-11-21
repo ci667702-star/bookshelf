@@ -1,22 +1,11 @@
 import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Button from './Button.jsx';
-import { CloseBox } from './Window.jsx';
+import { CloseBox, Ribbon } from './Window.jsx';
 
-const TONES = {
-  lime: 'bg-lime',
-  tangerine: 'bg-tangerine',
-  aqua: 'bg-aqua',
-  rose: 'bg-rose',
-  green: 'bg-matcha',
-  sky: 'bg-sky',
-  butter: 'bg-butter',
-  lilac: 'bg-lilac',
-  kraft: 'bg-kraft',
-};
 const SIZES = { sm: 'sm:max-w-sm', md: 'sm:max-w-lg', lg: 'sm:max-w-2xl' };
 
-/** 레트로 OS 창 모양의 대화상자 */
+/** 책장 한 장을 펼친 대화상자: 명조 제목 + 이중 괘선 + 책갈피 끈(tone) */
 export default function Modal({ open, onClose, title, tone = 'rose', size = 'md', children, footer }) {
   const titleId = useId();
   const panelRef = useRef(null);
@@ -70,17 +59,19 @@ export default function Modal({ open, onClose, title, tone = 'rose', size = 'md'
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`relative flex max-h-[92dvh] w-full animate-pop flex-col overflow-hidden rounded-t-[10px] border-[1.5px] border-ink/85 bg-paper shadow-[6px_6px_0_rgba(81,68,61,0.85)] outline-none sm:rounded-[6px] ${SIZES[size]}`}
+        className={`relative flex max-h-[92dvh] w-full animate-pop flex-col rounded-t-[6px] border-[1.5px] border-ink/85 bg-paper outline-none sm:rounded-[3px] sm:shadow-[var(--shadow-pages)] ${SIZES[size]}`}
       >
-        <div className={`flex h-9 shrink-0 items-center gap-2 border-b-[1.5px] border-ink/85 px-2.5 ${TONES[tone]}`}>
-          <h2 id={titleId} className="min-w-0 flex-1 truncate font-pixel text-[13px] font-bold">
+        <Ribbon tone={tone} className="absolute -top-[1.5px] right-14 h-10 w-[17px]" />
+        <div className="flex shrink-0 items-center gap-2 px-5 pt-4 pr-3 sm:px-6">
+          <h2 id={titleId} className="min-w-0 flex-1 truncate pr-12 font-serif text-[19px] font-bold">
             {title}
           </h2>
           <CloseBox onClose={onClose} label="닫기" />
         </div>
+        <div className="rule-book mx-5 mt-2 shrink-0 text-ink/85 sm:mx-6" aria-hidden />
         <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">{children}</div>
         {footer && (
-          <div className="flex shrink-0 flex-wrap justify-end gap-2 border-t border-ink/25 bg-chrome px-5 py-3">
+          <div className="flex shrink-0 flex-wrap justify-end gap-2 border-t border-ink/20 bg-milk px-5 py-3">
             {footer}
           </div>
         )}

@@ -17,14 +17,14 @@ const NOTE_COLORS = ['bg-butter', 'bg-rose', 'bg-matcha', 'bg-sky', 'bg-lilac'];
 export function QuoteNote({ quote, showBook = false, showUser = false, onEdit, onDelete, index = 0 }) {
   return (
     <figure
-      className={`relative flex h-full flex-col rounded-[4px] border-[1.5px] border-ink/80 p-4 pt-5 ${NOTE_COLORS[index % NOTE_COLORS.length]}`}
+      className={`relative flex h-full flex-col rounded-[3px] border-[1.5px] border-ink/80 p-4 pt-5 ${NOTE_COLORS[index % NOTE_COLORS.length]}`}
       style={{ transform: `rotate(${tilt(quote.id, 1.5)}deg)` }}
     >
       <span className="absolute -top-2 left-1/2 h-4 w-12 -translate-x-1/2 border border-ink/20 bg-paper/80" aria-hidden />
-      <blockquote className="hand flex-1 text-[19px] leading-snug whitespace-pre-wrap text-ink">“{quote.content}”</blockquote>
+      <blockquote className="bookish flex-1 text-[15px] leading-[1.75] whitespace-pre-wrap text-ink">“{quote.content}”</blockquote>
       <figcaption className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-ink/70">
         {showBook && quote.book && (
-          <Link to={`/books/${quote.book.id}`} className="font-pixel font-bold hover:underline">
+          <Link to={`/books/${quote.book.id}`} className="font-serif font-bold hover:underline">
             「{quote.book.title}」
           </Link>
         )}
@@ -45,12 +45,12 @@ export function QuoteNote({ quote, showBook = false, showUser = false, onEdit, o
       {quote.isMine && (onEdit || onDelete) && (
         <div className="absolute top-1.5 right-1.5 flex gap-0.5">
           {onEdit && (
-            <button onClick={() => onEdit(quote)} aria-label="문장 수정" className="rounded-[4px] p-1 text-ink/60 hover:bg-paper/70 hover:text-ink">
+            <button onClick={() => onEdit(quote)} aria-label="문장 수정" className="rounded-[3px] p-1 text-ink/60 hover:bg-paper/70 hover:text-ink">
               <Pencil size={13} />
             </button>
           )}
           {onDelete && (
-            <button onClick={() => onDelete(quote)} aria-label="문장 삭제" className="rounded-[4px] p-1 text-ink/60 hover:bg-paper/70 hover:text-berry">
+            <button onClick={() => onDelete(quote)} aria-label="문장 삭제" className="rounded-[3px] p-1 text-ink/60 hover:bg-paper/70 hover:text-berry">
               <Trash2 size={13} />
             </button>
           )}
@@ -115,7 +115,7 @@ export function QuoteModal({ open, onClose, book, quote }) {
         }}
       >
         <FormError message={m.error && !Object.keys(m.error.fields || {}).length ? m.error.message : null} />
-        {book && <p className="font-pixel text-[13px]">「{book.title}」</p>}
+        {book && <p className="font-serif text-[13px]">「{book.title}」</p>}
         <Field label="마음에 남은 문장" required error={m.error?.fields?.content} hint={`${f.content.length}/500`}>
           <Textarea value={f.content} maxLength={500} rows={4} onChange={(e) => setF({ ...f, content: e.target.value })} placeholder="책에서 밑줄 긋고 싶은 문장" />
         </Field>

@@ -8,7 +8,7 @@ import { useDocumentTitle } from '../hooks/index.js';
 import Button from '../components/ui/Button.jsx';
 import Window from '../components/ui/Window.jsx';
 import { QueryState, SkeletonBlock } from '../components/ui/States.jsx';
-import { ProgressBar } from '../components/ui/Misc.jsx';
+import { ProgressBar, StatTile } from '../components/ui/Misc.jsx';
 import BookCover from '../components/book/BookCover.jsx';
 import ShelfScene from '../components/book/ShelfScene.jsx';
 import MarathonTower from '../components/book/MarathonTower.jsx';
@@ -17,18 +17,6 @@ import LogModal from '../components/book/LogModal.jsx';
 import { formatTodayLong, num, progressPct } from '../utils/format.js';
 import { FeedItem, useFeed } from '../components/social/Follow.jsx';
 import { StartTimerButton, useTimer } from '../components/book/Timer.jsx';
-
-function StatTile({ tone, label, value, unit }) {
-  return (
-    <div className={`tile ${tone} px-3 py-2.5 sm:px-4 sm:py-3`}>
-      <p className="text-[12px] font-semibold text-ink/70">{label}</p>
-      <p className="flex items-baseline gap-1">
-        <span className="numeral text-[22px] leading-tight sm:text-[26px]">{value}</span>
-        <span className="text-[12px] font-bold">{unit}</span>
-      </p>
-    </div>
-  );
-}
 
 /** 홈 화면의 작은 위젯 창: 요약만 보여 주고 자세한 건 해당 화면으로 */
 function Widget({ title, tone, icon, to, linkLabel = '열기', children }) {
@@ -39,7 +27,7 @@ function Widget({ title, tone, icon, to, linkLabel = '열기', children }) {
       icon={icon}
       bodyClassName="p-3"
       footer={
-        <Link to={to} className="font-pixel text-[12px] text-link hover:underline">
+        <Link to={to} className="text-[12px] text-link hover:underline">
           {linkLabel} ›
         </Link>
       }
@@ -65,11 +53,14 @@ export default function DashboardPage() {
         return (
           <div className="flex flex-col gap-6">
             {/* 환영 */}
-            <section className="flex flex-wrap items-end justify-between gap-3 rounded-[8px] border-[1.5px] border-ink/85 bg-rose px-4 py-4 sm:px-5">
-              <div>
-                <p className="font-pixel text-[12px] text-ink/70">{formatTodayLong()}</p>
-                <h1 className="mt-1 text-[19px] leading-snug sm:text-[22px]">
-                  {user?.nickname}님, 오늘도 한 페이지 읽어볼까요?
+            <section className="flex overflow-hidden rounded-[3px] border-[1.5px] border-ink bg-rose-deep">
+              <div className="engraved flex min-w-0 flex-1 flex-wrap items-end justify-between gap-4 px-4 py-5 sm:px-6 sm:py-6">
+              <div className="min-w-0">
+                <p className="font-serif text-[13px] font-semibold text-ink/75">{formatTodayLong()}</p>
+                <h1 className="mt-1.5 text-[24px] leading-[1.2] tracking-[-0.045em] sm:text-[30px]">
+                  {user?.nickname}님,
+                  <br />
+                  오늘도 한 페이지 읽어볼까요?
                 </h1>
               </div>
               <div className="flex gap-2">
@@ -80,6 +71,8 @@ export default function DashboardPage() {
                   <PenLine size={14} /> 독후감
                 </Button>
               </div>
+              </div>
+              <div className="page-block w-3 shrink-0 border-l-[1.5px] border-ink bg-milk sm:w-4" aria-hidden />
             </section>
 
             {/* 통계 */}
@@ -94,7 +87,7 @@ export default function DashboardPage() {
             <section>
               <h2 className="mb-2.5 text-[16px]">지금 읽는 책</h2>
               {d.currentlyReading.length === 0 ? (
-                <p className="rounded-[8px] border-[1.5px] border-dashed border-ink/30 px-4 py-5 text-center text-[13.5px] text-ink-soft">
+                <p className="rounded-[3px] border-[1.5px] border-dashed border-ink/30 px-4 py-5 text-center text-[13.5px] text-ink-soft">
                   읽는 중인 책이 없어요.{' '}
                   <Link to="/books/new" className="font-semibold text-link underline">
                     책 등록하기
@@ -108,12 +101,12 @@ export default function DashboardPage() {
                         <BookCover book={r.book} className="h-14 w-10" />
                       </Link>
                       <div className="min-w-0 flex-1">
-                        <Link to={`/books/${r.book.id}`} className="block truncate font-pixel text-[13.5px] font-bold hover:underline">
+                        <Link to={`/books/${r.book.id}`} className="block truncate text-[13.5px] font-bold hover:underline">
                           {r.book.title}
                         </Link>
                         <div className="mt-1.5 flex items-center gap-2">
-                          <ProgressBar value={progressPct(r)} tone="bg-cocoa" label={`${r.book.title} 진행률`} />
-                          <span className="shrink-0 font-pixel text-[11px] text-ink-soft">
+                          <ProgressBar value={progressPct(r)} label={`${r.book.title} 진행률`} />
+                          <span className="shrink-0 text-[11px] text-ink-soft">
                             {r.currentPage}/{r.book.totalPages}
                           </span>
                         </div>
@@ -169,7 +162,7 @@ export default function DashboardPage() {
                   <ul className="flex flex-col gap-1.5">
                     {d.sharedShelves.slice(0, 3).map((s) => (
                       <li key={s.id}>
-                        <Link to={`/shared/${s.id}`} className="flex items-center justify-between rounded-[5px] px-2 py-1.5 text-[13px] hover:bg-milk">
+                        <Link to={`/shared/${s.id}`} className="flex items-center justify-between rounded-[3px] px-2 py-1.5 text-[13px] hover:bg-milk">
                           <span className="truncate font-semibold">{s.name}</span>
                           <span className="shrink-0 text-[11.5px] text-ink-soft">
                             {s.memberCount}명 · {s.bookCount}권
@@ -188,7 +181,7 @@ export default function DashboardPage() {
                   <ul className="flex flex-col gap-1.5">
                     {d.recentReviews.map((r) => (
                       <li key={r.id}>
-                        <Link to={`/reviews/${r.id}`} className="block rounded-[5px] px-2 py-1.5 hover:bg-milk">
+                        <Link to={`/reviews/${r.id}`} className="block rounded-[3px] px-2 py-1.5 hover:bg-milk">
                           <span className="block truncate text-[13px] font-semibold">{r.title}</span>
                           <span className="block truncate text-[11.5px] text-ink-soft">{r.book?.title}</span>
                         </Link>
@@ -219,7 +212,7 @@ export default function DashboardPage() {
             <section>
               <div className="mb-2.5 flex items-center justify-between">
                 <h2 className="text-[16px]">최근 등록한 책</h2>
-                <Link to="/shelves" className="font-pixel text-[12px] text-link hover:underline">
+                <Link to="/shelves" className="text-[12px] text-link hover:underline">
                   전체 ›
                 </Link>
               </div>
@@ -230,7 +223,7 @@ export default function DashboardPage() {
                   {d.recentBooks.map((r) => (
                     <Link key={r.id} to={`/books/${r.book.id}`} className="group w-[88px] shrink-0">
                       <BookCover book={r.book} className="aspect-[3/4] w-full transition-transform group-hover:-translate-y-1" />
-                      <p className="mt-1.5 truncate font-pixel text-[12px] font-bold">{r.book.title}</p>
+                      <p className="mt-1.5 truncate font-serif text-[12px] font-bold">{r.book.title}</p>
                     </Link>
                   ))}
                 </div>

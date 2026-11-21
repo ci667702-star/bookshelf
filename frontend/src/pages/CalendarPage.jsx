@@ -17,7 +17,7 @@ import { formatDay, num, todayKey } from '../utils/format.js';
 
 function Stat({ label, value, unit, tone }) {
   return (
-    <div className={`rounded-[8px] ${tone} px-4 py-3`}>
+    <div className={`rounded-[3px] ${tone} px-4 py-3`}>
       <p className="text-[12px] font-semibold text-ink/70">{label}</p>
       <p className="flex items-baseline gap-0.5">
         <span className="numeral text-[24px] leading-tight">{value}</span>
@@ -91,8 +91,8 @@ export default function CalendarPage() {
           return (
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
               {/* 크라프트지 위 다이어리 달력 */}
-              <section className="kraft-paper rounded-[8px] p-3 sm:p-6" aria-label={`${data.year}년 ${data.month}월 달력`}>
-                <div className={`relative rounded-[8px] bg-paper p-3 shadow-[0_18px_30px_-18px_rgba(81,68,61,0.6)] sm:p-6 ${q.isPlaceholderData ? 'opacity-60' : ''}`}>
+              <section className="kraft-paper rounded-[3px] p-3 sm:p-6" aria-label={`${data.year}년 ${data.month}월 달력`}>
+                <div className={`relative rounded-[3px] bg-paper p-3 shadow-[0_18px_30px_-18px_rgba(35,62,124,0.6)] sm:p-6 ${q.isPlaceholderData ? 'opacity-60' : ''}`}>
                   <Sticker type="ribbon" className="absolute -top-5 -right-3 h-14 w-14 rotate-12" />
                   <div className="mb-4 flex items-center justify-between gap-2">
                     <div className="flex items-baseline gap-3">
@@ -131,7 +131,7 @@ export default function CalendarPage() {
                   <Stat label="최장 연속" value={data.stats.bestStreak} unit="일" tone="bg-paper/90" />
                   <Stat label="읽은 시간" value={data.stats.totalMinutes ?? 0} unit="분" tone="bg-paper/90" />
                 </div>
-                <div className="mt-2 rounded-[8px] bg-paper/90 px-4 py-3">
+                <div className="mt-2 rounded-[3px] bg-paper/90 px-4 py-3">
                   <div className="mb-1.5 flex justify-between text-[12.5px]">
                     <span className="font-semibold">이번 달 목표 {num(data.stats.monthlyGoalPages)}쪽</span>
                     <span className="text-ink-soft">{data.stats.goalRate}%</span>
@@ -147,7 +147,7 @@ export default function CalendarPage() {
                 {!inMonth ? (
                   <p className="mt-4 text-[13.5px] text-ink-soft">달력에서 날짜를 눌러 그날의 독서를 확인해 보세요.</p>
                 ) : !day ? (
-                  <div className="mt-4 rounded-[8px] bg-milk px-4 py-6 text-center">
+                  <div className="mt-4 rounded-[3px] bg-milk px-4 py-6 text-center">
                     <p className="text-[13.5px] text-ink-soft">이날은 독서 기록이 없어요.</p>
                     {selected <= todayKey() && (
                       <Button size="sm" variant="secondary" className="mt-3" onClick={() => setLogOpen(true)}>
@@ -158,11 +158,11 @@ export default function CalendarPage() {
                 ) : (
                   <>
                     <p className="mt-1 text-[14px]">
-                      <b className="numeral text-[22px] text-cocoa-deep">{day.pages}</b>쪽 읽었어요
+                      <b className="numeral text-[22px] text-ink">{day.pages}</b>쪽 읽었어요
                       {day.minutes > 0 && <span className="ml-1 text-ink-soft">({day.minutes}분)</span>}
                     </p>
                     {day.finished.length > 0 && (
-                      <div className="mt-4 rounded-[8px] bg-rose/60 p-3">
+                      <div className="mt-4 rounded-[3px] bg-rose/60 p-3">
                         <p className="mb-2 flex items-center gap-1.5 text-[13px] font-bold">
                           <span className="h-3 w-3 rounded-full border-[1.5px] border-[#8f2e29] bg-pin" aria-hidden /> 완독한 책
                         </p>
@@ -177,7 +177,7 @@ export default function CalendarPage() {
                     <ul className="mt-4 flex flex-col gap-2">
                       {day.logs.map((l) => (
                         <li key={l.id}>
-                          <Link to={`/books/${l.book.id}`} className="flex gap-3 rounded-[8px] bg-milk p-2.5 transition hover:bg-kraft/60">
+                          <Link to={`/books/${l.book.id}`} className="flex gap-3 rounded-[3px] bg-milk p-2.5 transition hover:bg-kraft/60">
                             <BookCover book={l.book} className="h-14 w-10 shrink-0" />
                             <span className="min-w-0 flex-1">
                               <span className="block truncate font-serif text-[14px] font-bold">{l.book.title}</span>

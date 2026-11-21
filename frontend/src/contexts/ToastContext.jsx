@@ -47,7 +47,7 @@ export function ToastProvider({ children }) {
             <div
               key={t.id}
               role={t.type === 'error' ? 'alert' : 'status'}
-              className={`pointer-events-auto flex max-w-sm animate-pop items-center gap-2.5 rounded-[8px] border-[1.5px] border-ink/80 px-4 py-3 text-[14px] font-medium shadow-[4px_4px_0_rgba(81,68,61,0.8)] ${TONES[t.type]}`}
+              className={`pointer-events-auto flex max-w-sm animate-pop items-center gap-2.5 rounded-[3px] border-[1.5px] border-ink/85 px-4 py-3 text-[14px] font-medium shadow-[var(--shadow-page)] ${TONES[t.type]}`}
             >
               <Icon size={17} strokeWidth={2.4} className="shrink-0" />
               <span className="flex-1">{t.message}</span>

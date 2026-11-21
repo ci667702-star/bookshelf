@@ -9,7 +9,7 @@ function Thumb({ src, title }) {
   const [broken, setBroken] = useState(false);
   if (!src || broken) {
     return (
-      <span className="grid h-[60px] w-[42px] shrink-0 place-items-center border-[1.5px] border-ink/60 bg-kraft font-pixel text-[9px] text-ink-soft">
+      <span className="grid h-[60px] w-[42px] shrink-0 place-items-center border-[1.5px] border-ink/60 bg-kraft text-[9px] text-ink-soft">
         표지 없음
       </span>
     );
@@ -59,8 +59,8 @@ export default function BookSearch({ onPick }) {
   );
 
   return (
-    <div className="rounded-[8px] border-[1.5px] border-ink/85 bg-sky/60 p-3 sm:p-4">
-      <label htmlFor="book-search" className="mb-1.5 block font-pixel text-[13px] font-bold">
+    <div className="rounded-[3px] border-[1.5px] border-ink/85 bg-sky/60 p-3 sm:p-4">
+      <label htmlFor="book-search" className="mb-1.5 block text-[13px] font-bold">
         책 검색으로 채우기
       </label>
       <div className="flex gap-2">
@@ -107,7 +107,7 @@ export default function BookSearch({ onPick }) {
           <p className="mt-2 text-[13px] text-ink-soft">검색 결과가 없어요. 아래에 직접 입력해 주세요.</p>
         ) : (
           <>
-            <ul className="mt-2.5 max-h-72 divide-y divide-ink/10 overflow-y-auto rounded-[6px] border-[1.5px] border-ink/60 bg-paper" aria-label="책 검색 결과">
+            <ul className="mt-2.5 max-h-72 divide-y divide-ink/10 overflow-y-auto rounded-[3px] border-[1.5px] border-ink/60 bg-paper" aria-label="책 검색 결과">
               {state.items.map((item, i) => (
                 <li key={`${item.isbn ?? item.title}-${i}`}>
                   <button
@@ -120,12 +120,12 @@ export default function BookSearch({ onPick }) {
                   >
                     <Thumb src={item.coverImage} title={item.title} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-pixel text-[13px] font-bold">{item.title}</span>
+                      <span className="block truncate font-serif text-[13px] font-bold">{item.title}</span>
                       <span className="block truncate text-[12px] text-ink-soft">
                         {[item.author, item.publisher, item.pubYear].filter(Boolean).join(' / ')}
                       </span>
                     </span>
-                    <span className="shrink-0 font-pixel text-[11.5px] text-link">선택</span>
+                    <span className="shrink-0 text-[11.5px] text-link">선택</span>
                   </button>
                 </li>
               ))}

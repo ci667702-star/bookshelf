@@ -42,7 +42,7 @@ function JoinCard() {
   };
 
   return (
-    <form onSubmit={submit} className="relative overflow-hidden rounded-[8px] border-[1.5px] border-dashed border-ink/40 bg-butter p-5 sm:p-6">
+    <form onSubmit={submit} className="relative overflow-hidden rounded-[3px] border-[1.5px] border-dashed border-ink/40 bg-butter p-5 sm:p-6">
       <span className="absolute top-1/2 -left-3 h-6 w-6 -translate-y-1/2 rounded-full bg-milk" aria-hidden />
       <span className="absolute top-1/2 -right-3 h-6 w-6 -translate-y-1/2 rounded-full bg-milk" aria-hidden />
       <h2 className="flex items-center gap-2 text-[19px]">
@@ -138,7 +138,7 @@ export default function SharedShelvesPage() {
         <QueryState query={explore}>
           {(data) =>
             data.items.length === 0 ? (
-              <p className="rounded-[8px] bg-milk px-4 py-8 text-center text-[13.5px] text-ink-soft">공개된 공유 책장이 아직 없어요.</p>
+              <p className="rounded-[3px] bg-milk px-4 py-8 text-center text-[13.5px] text-ink-soft">공개된 공유 책장이 아직 없어요.</p>
             ) : (
               <div className="grid gap-3 md:grid-cols-2">
                 {data.items.map((s) => (

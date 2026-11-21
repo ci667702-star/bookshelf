@@ -53,25 +53,25 @@ export function BadgeGrid({ badges }) {
         {badges.map((b) => (
           <li
             key={b.key}
-            className={`flex flex-col gap-2 rounded-[8px] border-[1.5px] p-3 ${b.earned ? 'border-ink/85 bg-butter shadow-[2px_2px_0_rgba(81,68,61,0.85)]' : 'border-dashed border-ink/30 bg-paper'}`}
+            className={`flex flex-col gap-2 rounded-[3px] border-[1.5px] p-3 ${b.earned ? 'border-ink/85 bg-butter shadow-[var(--shadow-page)]' : 'border-dashed border-ink/30 bg-paper'}`}
           >
             <div className="flex items-center gap-2">
               <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border-[1.5px] ${b.earned ? 'border-ink/85 bg-paper' : 'border-ink/25 bg-kraft/60'}`}>
                 {b.reward ? (
                   <Sticker type={b.reward} className={`h-8 w-8 ${b.earned ? '' : 'opacity-30 grayscale'}`} diecut={false} />
                 ) : (
-                  <span className={`font-pixel text-[18px] ${b.earned ? '' : 'opacity-30'}`} aria-hidden>
+                  <span className={`text-[18px] ${b.earned ? '' : 'opacity-30'}`} aria-hidden>
                     ★
                   </span>
                 )}
               </span>
               <div className="min-w-0">
-                <p className="truncate font-pixel text-[13px] font-bold">{b.name}</p>
+                <p className="truncate font-serif text-[13px] font-bold">{b.name}</p>
                 <p className="text-[11.5px] text-ink-soft">{b.earned ? `${formatDateTime(b.earnedAt)} 획득` : `${b.progress} / ${b.goal}`}</p>
               </div>
             </div>
             <p className="text-[12px] leading-snug text-ink/80">{b.desc}</p>
-            {!b.earned && <ProgressBar value={(b.progress / b.goal) * 100} tone="bg-cocoa" label={`${b.name} 진행도`} />}
+            {!b.earned && <ProgressBar value={(b.progress / b.goal) * 100} label={`${b.name} 진행도`} />}
             {b.reward && (
               <p className="flex items-center gap-1 text-[11.5px] text-ink-soft">
                 {!b.earned && <Lock size={11} />} 보상: {STICKER_LABELS[b.reward]} 스티커

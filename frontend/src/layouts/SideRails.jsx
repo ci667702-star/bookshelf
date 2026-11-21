@@ -34,7 +34,7 @@ function MyInfo() {
       <div className="flex items-center gap-2.5">
         <Avatar user={user} size={46} />
         <div className="min-w-0">
-          <p className="truncate font-pixel text-[14px] font-bold">{user.nickname}</p>
+          <p className="truncate font-serif text-[14px] font-bold">{user.nickname}</p>
           {user.bio && <p className="line-clamp-2 text-[11.5px] leading-snug text-ink-soft">{user.bio}</p>}
         </div>
       </div>
@@ -44,9 +44,9 @@ function MyInfo() {
           ['쪽수', m ? num(m.totalPages) : '–', 'bg-butter'],
           ['높이', m ? `${m.heightCm}cm` : '–', 'bg-sky'],
         ].map(([k, v, tone]) => (
-          <div key={k} className={`rounded-[5px] border border-ink/40 ${tone} px-1 py-1.5`}>
+          <div key={k} className={`rounded-[3px] border border-ink/40 ${tone} px-1 py-1.5`}>
             <dt className="text-[10.5px] text-ink/70">{k}</dt>
-            <dd className="truncate font-pixel text-[12.5px] font-bold">{v}</dd>
+            <dd className="truncate text-[12.5px] font-bold">{v}</dd>
           </div>
         ))}
       </dl>
@@ -102,9 +102,9 @@ function MyShelvesMini() {
           <ul className="mt-2 flex flex-col">
             {shelves.slice(0, 4).map((s) => (
               <li key={s.id}>
-                <Link to={`/shelves/${s.id}`} className="flex items-center justify-between rounded-[4px] px-1.5 py-1 text-[12.5px] hover:bg-milk">
+                <Link to={`/shelves/${s.id}`} className="flex items-center justify-between rounded-[3px] px-1.5 py-1 text-[12.5px] hover:bg-milk">
                   <span className="truncate font-semibold">{s.name}</span>
-                  <span className="shrink-0 font-pixel text-[11px] text-ink-soft">{s.bookCount}권</span>
+                  <span className="shrink-0 text-[11px] text-ink-soft">{s.bookCount}권</span>
                 </Link>
               </li>
             ))}
@@ -212,16 +212,16 @@ function ReadingNow() {
                 <BookCover book={r.book} className="h-12 w-[34px]" />
               </Link>
               <div className="min-w-0 flex-1">
-                <Link to={`/books/${r.book.id}`} className="block truncate font-pixel text-[12.5px] font-bold hover:underline">
+                <Link to={`/books/${r.book.id}`} className="block truncate text-[12.5px] font-bold hover:underline">
                   {r.book.title}
                 </Link>
                 <div className="mt-1 flex items-center gap-1.5">
-                  <ProgressBar value={progressPct(r)} tone="bg-cocoa" label={`${r.book.title} 진행률`} className="h-2" />
-                  <span className="shrink-0 font-pixel text-[10px] text-ink-soft">{progressPct(r)}%</span>
+                  <ProgressBar value={progressPct(r)} label={`${r.book.title} 진행률`} className="h-2" />
+                  <span className="shrink-0 text-[10px] text-ink-soft">{progressPct(r)}%</span>
                 </div>
               </div>
               {running === r.id ? (
-                <span className="shrink-0 rounded-[4px] bg-pin px-1.5 py-0.5 font-pixel text-[10px] text-white">진행 중</span>
+                <span className="shrink-0 rounded-[3px] bg-pin px-1.5 py-0.5 text-[10px] text-white">진행 중</span>
               ) : (
                 <StartTimerButton record={r} size="xs" variant="soft" label="" />
               )}
@@ -324,9 +324,9 @@ function TodayQuote() {
         <p className="text-[12.5px] text-ink-soft">책 화면의 「문장 모으기」로 마음에 남은 문장을 모아 보세요. 여기에 하루 하나씩 떠요.</p>
       ) : (
         <figure>
-          <blockquote className="hand text-[18px] leading-snug">“{pick.content}”</blockquote>
+          <blockquote className="bookish text-[14.5px] leading-[1.7]">“{pick.content}”</blockquote>
           <figcaption className="mt-1.5 text-[11.5px] text-ink-soft">
-            <Link to={`/books/${pick.book.id}`} className="font-pixel hover:underline">
+            <Link to={`/books/${pick.book.id}`} className="font-serif hover:underline">
               「{pick.book.title}」
             </Link>
             {pick.page ? ` ${pick.page}쪽` : ''}

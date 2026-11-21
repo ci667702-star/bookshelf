@@ -147,11 +147,11 @@ export default function BarcodeScanner({ open, onClose, onDetected }) {
   return (
     <Modal open={open} onClose={onClose} title="바코드로 책 찾기" tone="aqua">
       <div className="flex flex-col gap-4">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[6px] border-[1.5px] border-ink/85 bg-ink">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[3px] border-[1.5px] border-ink/85 bg-ink">
           <video ref={videoRef} className="h-full w-full object-cover" muted playsInline aria-label="카메라 미리보기" />
           {status === 'scanning' && (
             <div className="pointer-events-none absolute inset-0 grid place-items-center" aria-hidden>
-              <div className="relative h-[34%] w-[78%] rounded-[6px] border-2 border-dashed border-white/90">
+              <div className="relative h-[34%] w-[78%] rounded-[3px] border-2 border-dashed border-white/90">
                 <span className="absolute inset-x-2 top-1/2 h-[2px] animate-pulse bg-pin" />
               </div>
             </div>

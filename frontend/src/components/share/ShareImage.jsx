@@ -1,8 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Download, Share2 } from 'lucide-react';
 import { toPng } from 'html-to-image';
-import galmuri from 'galmuri/dist/Galmuri11.woff2?url';
-import galmuriBold from 'galmuri/dist/Galmuri11-Bold.woff2?url';
 import penKo from '@fontsource/nanum-pen-script/files/nanum-pen-script-korean-400-normal.woff2?url';
 import penLatin from '@fontsource/nanum-pen-script/files/nanum-pen-script-latin-400-normal.woff2?url';
 import Modal from '../ui/Modal.jsx';
@@ -27,16 +25,61 @@ const toDataUrl = async (url) => {
   });
 };
 
-// 그림 안에서 쓸 글꼴만 골라 넣는다 (전체 웹폰트를 넣으면 너무 무겁다)
-let fontCssPromise;
-const fontCss = () =>
-  (fontCssPromise ??= Promise.all([galmuri, galmuriBold, penKo, penLatin].map(toDataUrl)).then(
-    ([g, gb, pk, pl]) => `
-@font-face{font-family:Galmuri11;font-weight:400;src:url(${g}) format('woff2');}
-@font-face{font-family:Galmuri11;font-weight:700;src:url(${gb}) format('woff2');}
-@font-face{font-family:'Nanum Pen Script';src:url(${pk}) format('woff2');}
-@font-face{font-family:'Nanum Pen Script';src:url(${pl}) format('woff2');unicode-range:U+0000-00FF;}`
-  ));
+const SERIF = 'Hahmlet Variable';
+
+/** 'U+d723-d728,U+f900' → [[0xd723, 0xd728], [0xf900, 0xf900]] */
+const parseRanges = (s) =>
+  String(s)
+    .split(',')
+    .map((r) => r.trim().replace(/^U\+/i, ''))
+    .filter(Boolean)
+    .map((r) => {
+      const [a, b = a] = r.split('-');
+      return [parseInt(a.replace(/\?/g, '0'), 16), parseInt(b.replace(/\?/g, 'f'), 16)];
+    });
+
+/** 지금 페이지에 실린 명조(Hahmlet) 조각 목록: { url, ranges } — 개발 · 배포 어디서든 실제 주소를 그대로 쓴다 */
+function serifFaces() {
+  const faces = [];
+  for (const sheet of document.styleSheets) {
+    let rules;
+    try {
+      rules = sheet.cssRules;
+    } catch {
+      continue; // 다른 출처의 스타일시트
+    }
+    for (const rule of rules) {
+      if (!(rule instanceof CSSFontFaceRule)) continue;
+      if (!rule.style.getPropertyValue('font-family').includes(SERIF)) continue;
+      const src = rule.style.getPropertyValue('src').match(/url\(["']?([^"')]+)["']?\)/)?.[1];
+      if (src) faces.push({ url: new URL(src, sheet.href ?? location.href).href, ranges: parseRanges(rule.style.getPropertyValue('unicode-range') || 'U+0-10FFFF') });
+    }
+  }
+  return faces;
+}
+
+// 그림 안에 실제로 쓰인 글자가 들어 있는 글꼴 조각만 넣는다 (한글 명조 전체를 넣으면 너무 무겁다)
+const dataUrlCache = new Map();
+const cachedDataUrl = (url) => {
+  if (!dataUrlCache.has(url)) dataUrlCache.set(url, toDataUrl(url));
+  return dataUrlCache.get(url);
+};
+async function fontCss(node) {
+  const codes = new Set([...(node.textContent ?? '')].map((ch) => ch.codePointAt(0)));
+  codes.add(0x30); // 숫자 · 영문 조각은 항상
+  const used = serifFaces().filter((f) => f.ranges.some(([a, b]) => [...codes].some((c) => c >= a && c <= b)));
+  const [pk, pl, ...serif] = await Promise.all([cachedDataUrl(penKo), cachedDataUrl(penLatin), ...used.map((f) => cachedDataUrl(f.url))]);
+  return [
+    `@font-face{font-family:'Nanum Pen Script';src:url(${pk}) format('woff2');}`,
+    `@font-face{font-family:'Nanum Pen Script';src:url(${pl}) format('woff2');unicode-range:U+0000-00FF;}`,
+    ...used.map(
+      (f, i) =>
+        `@font-face{font-family:'${SERIF}';font-weight:100 900;src:url(${serif[i]}) format('woff2');unicode-range:${f.ranges
+          .map(([a, b]) => `U+${a.toString(16)}-${b.toString(16)}`)
+          .join(',')};}`
+    ),
+  ].join('\n');
+}
 
 /** 미리보기 + PNG 저장 / 공유 */
 export function ShareImageModal({ open, onClose, title, filename, children }) {
@@ -72,7 +115,7 @@ export function ShareImageModal({ open, onClose, title, filename, children }) {
         pixelRatio: 2,
         cacheBust: true,
         skipFonts: true,
-        fontEmbedCSS: await fontCss(),
+        fontEmbedCSS: await fontCss(cardRef.current),
         imagePlaceholder: TRANSPARENT,
         backgroundColor: '#FFF9F2',
       });
@@ -143,9 +186,10 @@ export function ShareImageModal({ open, onClose, title, filename, children }) {
 
 function CardFrame({ children, tone = 'bg-milk' }) {
   return (
-    <div className={`${tone} p-6 font-pixel text-ink`} style={{ fontFamily: 'Galmuri11, sans-serif' }}>
+    <div className={`${tone} p-6 text-ink`} style={{ fontFamily: `'${SERIF}', serif` }}>
       {children}
-      <div className="mt-5 flex items-center justify-between border-t-[1.5px] border-dashed border-ink/30 pt-3 text-[12px]">
+      <div className="rule-book mt-5 text-ink/80" aria-hidden />
+      <div className="flex items-center justify-between pt-2.5 text-[12px] font-semibold">
         <span className="flex items-center gap-1.5">
           <LogoMark className="h-5 w-5" /> 북모먼트 BookMoment
         </span>
@@ -157,7 +201,7 @@ function CardFrame({ children, tone = 'bg-milk' }) {
 
 function StatBox({ label, value, unit, tone }) {
   return (
-    <div className={`rounded-[6px] border-[1.5px] border-ink/85 ${tone} px-3 py-2`}>
+    <div className={`rounded-[3px] border-[1.5px] border-ink/85 ${tone} px-3 py-2`}>
       <p className="text-[11px] text-ink/70">{label}</p>
       <p className="text-[20px] font-bold leading-tight">
         {value}
@@ -172,7 +216,7 @@ export function ShelfShareCard({ shelf, owner, records, decoration, stats }) {
   return (
     <CardFrame>
       <p className="text-[12px] text-ink/70">{owner?.nickname}님의 책장</p>
-      <h2 className="mt-1 text-[26px] font-bold">{shelf.name}</h2>
+      <h2 className="mt-1 text-[30px] font-extrabold tracking-[-0.035em]">{shelf.name}</h2>
       {shelf.description && <p className="mt-1 text-[12.5px] leading-relaxed text-ink/80">{shelf.description}</p>}
       <div className="mt-4">
         <ShelfScene records={records} decoration={decoration} linkBooks={false} minRows={2} />
@@ -194,9 +238,9 @@ export function MonthShareCard({ data, nickname }) {
   const s = data.stats;
   return (
     <CardFrame tone="kraft-paper">
-      <div className="rounded-[8px] border-[1.5px] border-ink/85 bg-paper p-5">
+      <div className="rounded-[3px] border-[1.5px] border-ink/85 bg-paper p-5">
         <p className="text-[12px] text-ink/70">{nickname}님의</p>
-        <h2 className="mt-1 text-[28px] font-bold">
+        <h2 className="mt-1 text-[30px] font-extrabold tracking-[-0.035em]">
           {data.year}년 {data.month}월의 독서
         </h2>
         <div className="mt-4 grid grid-cols-3 gap-2">

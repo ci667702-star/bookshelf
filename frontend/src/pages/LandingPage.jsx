@@ -62,11 +62,11 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-dvh">
-      <header className="border-b-[1.5px] border-ink/85 bg-milk">
+      <header className="border-b-[2.5px] border-ink/90 bg-milk shadow-[0_2px_0_0_var(--color-milk),0_3px_0_0_rgb(35_62_124/0.6)]">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <Link to="/" className="flex items-center gap-2" aria-label="북모먼트 홈">
             <LogoMark className="h-8 w-8" />
-            <span className="wordmark text-[17px] text-cocoa-deep">북모먼트</span>
+            <span className="wordmark text-[21px] text-ink">북모먼트</span>
           </Link>
           <nav className="flex items-center gap-2">
             {user ? (
@@ -87,22 +87,29 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto flex max-w-5xl flex-col gap-8 px-3 py-8 sm:px-4 sm:py-12">
-        {/* 첫 화면 */}
-        <div className="grid gap-5 lg:grid-cols-[1fr_1.15fr]">
-          <Window title="북모먼트.exe" tone="rose" bodyClassName="p-6 sm:p-8">
-            <div className="relative">
-              <Sticker type="flower" className="absolute -top-2 right-0 h-12 w-12 rotate-12" />
-              <p className="font-pixel text-[13px] text-ink-soft">BookMoment</p>
-              <h1 className="mt-2 text-[26px] leading-[1.35] sm:text-[32px]">
-                오늘 읽은 한 페이지가
+      <main className="mx-auto flex max-w-5xl flex-col gap-10 px-3 py-8 sm:px-4 sm:py-12">
+        {/* 첫 화면: 분홍 표지에 남색 잉크로 찍은 책 한 권 */}
+        <div className="grid items-start gap-6 lg:grid-cols-[1.05fr_1fr]">
+          <section aria-labelledby="hero-title" className="relative flex rounded-[3px] border-[1.5px] border-ink bg-rose-deep shadow-[var(--shadow-pages)]">
+            <div className="engraved relative min-w-0 flex-1 px-6 pt-7 pb-6 sm:px-9 sm:pt-10">
+              <p className="font-serif text-[14px] font-semibold text-ink/80">나만의 책장과 독서 기록</p>
+              <div className="rule-book mt-3 w-16 text-ink" aria-hidden />
+              <h1
+                id="hero-title"
+                className="mt-6 font-serif text-[44px] leading-[1.08] font-black tracking-[-0.055em] text-ink sm:text-[58px]"
+              >
+                오늘 읽은
                 <br />
-                나만의 책장이 됩니다
+                한 페이지가
+                <br />
+                나만의 책장이
+                <br />
+                됩니다
               </h1>
-              <p className="mt-4 max-w-sm text-[14.5px] text-ink-soft">
+              <p className="bookish mt-6 max-w-sm text-[15px] text-ink/85">
                 읽은 책을 기록하고, 책장을 꾸미고, 친구와 독서 생활을 나누는 작은 독서 SNS예요.
               </p>
-              <div className="mt-7 flex flex-wrap gap-2">
+              <div className="mt-7 flex flex-wrap gap-2.5">
                 <Button to={user ? '/dashboard' : '/signup'} size="lg">
                   {user ? '내 책장 열기' : '무료로 책장 만들기'}
                 </Button>
@@ -112,9 +119,12 @@ export default function LandingPage() {
                   </Button>
                 )}
               </div>
+              <p className="mt-10 text-right font-serif text-[13px] font-semibold text-ink/80">북모먼트 지음</p>
             </div>
-          </Window>
-          <Window title="예시 책장 - 미리보기" tone="tangerine" bodyClassName="p-3">
+            {/* 책 배: 겹겹이 쌓인 종이 가장자리 */}
+            <div className="page-block w-4 shrink-0 border-l-[1.5px] border-ink bg-milk sm:w-6" aria-hidden />
+          </section>
+          <Window title="예시 책장" tone="tangerine" bodyClassName="p-3">
             <ShelfScene records={SAMPLE} decoration={SAMPLE_DECO} linkBooks={false} minRows={2} />
             <p className="mt-2 text-center text-[12px] text-ink-soft">가입하면 나만의 빈 책장이 생겨요</p>
           </Window>
@@ -122,9 +132,10 @@ export default function LandingPage() {
 
         {/* 기능 */}
         <section aria-labelledby="features-title">
-          <h2 id="features-title" className="mb-4 text-[20px]">
+          <h2 id="features-title" className="text-[26px] font-extrabold tracking-[-0.035em]">
             책을 읽는 순간을 모아 두는 곳
           </h2>
+          <div className="rule-book mt-3 mb-5 text-ink/85" aria-hidden />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <Window key={f.title} title={f.title} tone={f.tone} icon={f.icon} bodyClassName="flex gap-3 p-4">
@@ -132,23 +143,26 @@ export default function LandingPage() {
                 <p className="text-[13.5px] leading-relaxed">{f.body}</p>
               </Window>
             ))}
-            <Window title="독서 마라톤 - 예시" tone="butter" icon={Ruler} bodyClassName="p-4 pt-8">
+            <Window title="독서 마라톤 예시" tone="butter" icon={Ruler} bodyClassName="p-4 pt-8">
               <MarathonTower compact stack={SAMPLE_STACK} totalPages={SAMPLE_PAGES} heightCm={SAMPLE_PAGES / 100} maxHeight={120} />
             </Window>
           </div>
         </section>
 
-        <Window title="시작하기" tone="lime" bodyClassName="flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
+        {/* 뒤표지: 남색 면에 분홍 잉크 */}
+        <section className="flex flex-wrap items-center justify-between gap-5 rounded-[3px] border-[1.5px] border-ink bg-ink px-6 py-7 text-milk shadow-[var(--shadow-misprint)] sm:px-9">
           <div>
-            <p className="font-pixel text-[17px] font-bold">첫 책을 꽂는 데는 1분이면 충분해요</p>
-            <p className="mt-1 text-[13.5px] text-ink-soft">100쪽 = 1cm, 오늘 읽은 만큼 책장이 자라요.</p>
+            <p className="font-serif text-[24px] leading-snug font-extrabold tracking-[-0.035em] text-rose sm:text-[28px]">
+              첫 책을 꽂는 데는 1분이면 충분해요
+            </p>
+            <p className="mt-1.5 text-[14px] text-milk/80">100쪽 = 1cm, 오늘 읽은 만큼 책장이 자라요.</p>
           </div>
-          <Button to={user ? '/books/new' : '/signup'} size="lg">
+          <Button to={user ? '/books/new' : '/signup'} variant="secondary" size="lg">
             {user ? '책 등록하기' : '지금 시작하기'}
           </Button>
-        </Window>
+        </section>
 
-        <p className="text-center font-pixel text-[11.5px] text-ink-soft">© 2026 BookMoment 북모먼트</p>
+        <p className="text-center font-serif text-[12px] text-ink-soft">© 2026 BookMoment 북모먼트</p>
       </main>
     </div>
   );

@@ -9,14 +9,17 @@ const outDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../pu
 fs.mkdirSync(outDir, { recursive: true });
 
 const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-const INK = hex('#51443D');
+const INK = hex('#233E7C'); // 남색 잉크
+const PINK = hex('#EFB3BB'); // 분홍 잉크(바탕)
 
-// 로고(64 단위 좌표, favicon.svg 와 동일한 모양). stroke 는 바깥 잉크 + 안쪽 채움 두 겹으로 표현
+// 로고(64 단위 좌표, favicon.svg · LogoMark 와 같은 모양). stroke 는 바깥 잉크 + 안쪽 채움 두 겹으로 표현
 const shapes = [
-  { x: 14, y: 16, w: 10, h: 34, r: 2.5, fill: hex('#A47762') },
-  { x: 26, y: 22, w: 9, h: 28, r: 2.5, fill: hex('#DDE8D7'), stroke: 1.8 },
-  { x: 37, y: 12, w: 12, h: 38, r: 2.5, fill: hex('#FFF9F2'), stroke: 1.8, rot: (8 * Math.PI) / 180, cx: 43, cy: 31 },
-  { x: 10, y: 50, w: 44, h: 4, r: 2, fill: INK },
+  { x: 13, y: 15, w: 11, h: 35, r: 1.5, fill: INK },
+  { x: 13, y: 21, w: 11, h: 2.5, r: 0, fill: PINK },
+  { x: 13, y: 42, w: 11, h: 2.5, r: 0, fill: PINK },
+  { x: 26, y: 22, w: 9, h: 28, r: 1.5, fill: hex('#FFF9F2'), stroke: 2 },
+  { x: 38, y: 12, w: 11, h: 38, r: 1.5, fill: INK, rot: (9 * Math.PI) / 180, cx: 43.5, cy: 31 },
+  { x: 10, y: 50, w: 44, h: 3.5, r: 0, fill: INK },
 ];
 
 function inRoundRect(px, py, x, y, w, h, r) {
@@ -52,7 +55,7 @@ function colorAt(u, v, bg) {
 
 /** size px 정사각형, contentRatio: 로고가 차지할 비율 (maskable 은 안전 영역 때문에 작게) */
 function render(size, contentRatio) {
-  const bg = hex('#F5D8D8');
+  const bg = PINK;
   const k = (size * contentRatio) / 46; // 로고 폭 약 46 단위
   const SS = 4; // 4x4 슈퍼샘플링(안티앨리어싱)
   const rows = [];
