@@ -32,14 +32,14 @@ export default function BookNewPage() {
       <h1 className="text-[22px]">책 등록</h1>
       <p className="mt-1 mb-6 text-[14px] text-ink-soft">읽은 책, 읽는 중인 책, 읽고 싶은 책 모두 꽂을 수 있어요.</p>
       {sharedId && shared.data && (
-        <p className="mb-5 flex items-center gap-2 rounded-[8px] bg-matcha px-4 py-3 text-[13.5px]">
+        <p className="mb-5 flex items-center gap-2 rounded-[3px] bg-matcha px-4 py-3 text-[13.5px]">
           <Users size={16} /> 등록하면 공유 책장 <b>「{shared.data.shelf.name}」</b>에도 함께 꽂혀요.
         </p>
       )}
       {existingId && (
-        <p className="mb-5 rounded-[8px] bg-butter px-4 py-3 text-[13.5px]">
+        <p className="mb-5 rounded-[3px] bg-butter px-4 py-3 text-[13.5px]">
           이미 등록한 책이에요.{' '}
-          <Link to={`/books/${existingId}`} className="font-semibold text-cocoa-deep underline">
+          <Link to={`/books/${existingId}`} className="font-semibold text-link underline">
             그 책으로 가기
           </Link>
         </p>

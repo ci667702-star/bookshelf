@@ -86,7 +86,7 @@ function Body({ data }) {
           ) : null}
         </div>
 
-        <div className="prose-review mt-8 font-sans text-[16.5px] leading-[1.95] text-ink sm:text-[17.5px]">
+        <div className="prose-review bookish mt-8 text-[16.5px] leading-[1.95] text-ink sm:text-[17.5px]">
           {paragraphs.map((p, i) => (
             <p key={i} className="whitespace-pre-wrap">
               {p}

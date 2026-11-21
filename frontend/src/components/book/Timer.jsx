@@ -112,8 +112,8 @@ function StopModal({ open, onClose, session, elapsed }) {
     >
       <div className="flex flex-col gap-4">
         <FormError message={stop.error?.message} />
-        <p className="rounded-[8px] border-[1.5px] border-ink/30 bg-milk px-4 py-3 text-[13.5px]">
-          <b className="font-pixel">「{record.book.title}」</b>을(를) <b className="numeral text-[16px]">{formatElapsed(elapsed)}</b> 동안 읽었어요.
+        <p className="rounded-[3px] border-[1.5px] border-ink/30 bg-milk px-4 py-3 text-[13.5px]">
+          <b className="font-serif">「{record.book.title}」</b>을(를) <b className="numeral text-[16px]">{formatElapsed(elapsed)}</b> 동안 읽었어요.
           <br />
           지금까지 {base} / {total}쪽
         </p>
@@ -158,7 +158,7 @@ export function TimerBar() {
   return (
     <>
       <div className="fixed inset-x-0 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-30 flex justify-center px-3" role="status" aria-live="off">
-        <div className="flex w-full max-w-md items-center gap-2 rounded-[8px] border-[1.5px] border-ink/85 bg-lime px-3 py-2 shadow-[3px_3px_0_rgba(81,68,61,0.85)]">
+        <div className="flex w-full max-w-md items-center gap-2 rounded-[3px] border-[1.5px] border-ink/85 bg-lime px-3 py-2 shadow-[var(--shadow-page)]">
           <span className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full border-[1.5px] border-ink/85 bg-paper">
             <TimerIcon size={16} />
             <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 animate-pulse rounded-full border border-paper bg-pin" aria-hidden />
@@ -176,7 +176,7 @@ export function TimerBar() {
             onClick={() => cancel.mutate()}
             aria-label="기록하지 않고 타이머 끄기"
             title="기록하지 않고 끄기"
-            className="grid h-7 w-7 place-items-center rounded-[4px] text-ink/60 hover:bg-paper/60 hover:text-ink"
+            className="grid h-7 w-7 place-items-center rounded-[3px] text-ink/60 hover:bg-paper/60 hover:text-ink"
           >
             <X size={15} />
           </button>

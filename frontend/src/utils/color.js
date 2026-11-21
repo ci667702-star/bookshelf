@@ -1,15 +1,16 @@
 // 표지가 없는 책을 위한 결정적 색상 · 크기 (같은 책은 항상 같은 모습)
 
+// 두 가지 잉크로 찍은 책 표지들 (남색 · 분홍 · 빨강 별색) + 파스텔 몇 가지
 const COVER_PALETTES = [
-  { bg: '#F5D8D8', fg: '#7C4A47', band: '#A47762' },
-  { bg: '#DDE8D7', fg: '#3F5A37', band: '#7E9B72' },
-  { bg: '#DCE8F2', fg: '#36546E', band: '#7FA2C2' },
+  { bg: '#EFB3BB', fg: '#233E7C', band: '#233E7C' }, // 분홍 표지 · 남색 글자
+  { bg: '#233E7C', fg: '#F5D8D8', band: '#EFB3BB' }, // 남색 표지 · 분홍 글자
+  { bg: '#DCE8F2', fg: '#D23A2B', band: '#D23A2B' }, // 하늘색 종이 · 빨강 글자
+  { bg: '#FFF9F2', fg: '#233E7C', band: '#E2412F' }, // 크림 종이 · 남색 글자 · 빨강 띠
+  { bg: '#DDE8D7', fg: '#233E7C', band: '#7E9B72' },
   { bg: '#F8E8B8', fg: '#6B5420', band: '#D3A84C' },
   { bg: '#E6DDF0', fg: '#4F3F6E', band: '#9C86C4' },
+  { bg: '#F5D8D8', fg: '#7C4A47', band: '#A47762' },
   { bg: '#A47762', fg: '#FFF9F2', band: '#F5D8D8' },
-  { bg: '#F2E8DC', fg: '#51443D', band: '#C49A82' },
-  { bg: '#51443D', fg: '#F5D8D8', band: '#DDE8D7' },
-  { bg: '#EBC7B8', fg: '#6E3D2E', band: '#FFF9F2' },
 ];
 
 export function hashString(s = '') {

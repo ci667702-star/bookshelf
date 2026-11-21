@@ -18,7 +18,7 @@ export default function BookCover({ book, className = '', rounded = 'rounded-[2p
 
   return (
     <div
-      className={`@container relative overflow-hidden border-[1.5px] border-ink/85 ${rounded} ${shadow ? 'shadow-[2px_2px_0_rgba(81,68,61,0.85)]' : ''} ${className}`}
+      className={`@container relative overflow-hidden border-[1.5px] border-ink/85 ${rounded} ${shadow ? 'shadow-[3px_3px_0_rgba(35,62,124,0.28)]' : ''} ${className}`}
       style={{ background: pal.bg, ...style }}
     >
       {hasImg ? (
@@ -26,7 +26,7 @@ export default function BookCover({ book, className = '', rounded = 'rounded-[2p
       ) : (
         <div className="flex h-full flex-col p-[10%] pl-[16%]" style={{ color: pal.fg }} role="img" aria-label={`${book.title} 표지`}>
           <span className="block h-[3px] w-[34%]" style={{ background: pal.band }} />
-          <p className="mt-[12%] line-clamp-4 font-pixel text-[13cqw] leading-[1.3] font-bold break-keep">{book.title}</p>
+          <p className="mt-[12%] line-clamp-4 font-serif text-[14cqw] leading-[1.18] font-extrabold tracking-[-0.01em] break-keep">{book.title}</p>
           <p className="mt-auto truncate text-[9cqw] font-semibold opacity-80">{book.author}</p>
         </div>
       )}

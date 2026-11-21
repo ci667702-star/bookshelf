@@ -70,7 +70,7 @@ export default function MonthGrid({ year, month, days = {}, today, selected, onS
         {WEEKDAYS.map((w, i) => (
           <div
             key={w}
-            className={`text-center font-pixel ${mini ? 'text-[11px]' : 'text-[12.5px]'} ${i === 0 ? 'text-berry' : i === 6 ? 'text-link' : 'text-ink-soft'}`}
+            className={`text-center ${mini ? 'text-[11px]' : 'text-[12.5px]'} ${i === 0 ? 'text-berry' : i === 6 ? 'text-saturday' : 'text-ink-soft'}`}
           >
             {w}
           </div>
@@ -99,10 +99,10 @@ export default function MonthGrid({ year, month, days = {}, today, selected, onS
                     type="button"
                     onClick={() => onSelect?.(key)}
                     aria-label={label}
-                    className="flex h-9 flex-col items-center justify-center rounded-[4px] transition hover:bg-kraft/60"
+                    className="flex h-9 flex-col items-center justify-center rounded-[3px] transition hover:bg-kraft/60"
                   >
                     <span
-                      className={`grid h-6 w-6 place-items-center rounded-full font-pixel text-[11px] ${
+                      className={`grid h-6 w-6 place-items-center rounded-full text-[11px] ${
                         isToday ? 'bg-ink text-white' : info?.pages ? 'border-[1.5px] border-ink/70 bg-rose' : 'text-ink-soft'
                       }`}
                     >
@@ -122,19 +122,19 @@ export default function MonthGrid({ year, month, days = {}, today, selected, onS
                   aria-label={label}
                   aria-pressed={isSel}
                   className={`relative flex min-h-[88px] flex-col items-stretch p-1 text-left transition sm:min-h-[124px] sm:p-1.5 ${
-                    isSel ? 'z-20 rounded-[6px] bg-butter/70 outline-2 outline-ink outline-dashed' : 'hover:bg-kraft/50'
+                    isSel ? 'z-20 rounded-[3px] bg-butter/70 outline-2 outline-ink outline-dashed' : 'hover:bg-kraft/50'
                   }`}
                 >
                   <span className="flex w-full items-center justify-between gap-1">
                     <span
-                      className={`grid h-6 w-6 place-items-center rounded-full font-pixel text-[12px] sm:h-7 sm:w-7 sm:text-[14px] ${
+                      className={`grid h-6 w-6 place-items-center rounded-full text-[12px] sm:h-7 sm:w-7 sm:text-[14px] ${
                         isToday ? 'bg-ink text-white' : di === 0 ? 'text-berry' : 'text-ink'
                       }`}
                     >
                       {d}
                     </span>
                     {info?.pages > 0 && (
-                      <span className="hidden rounded-full bg-paper px-1 font-pixel text-[10px] whitespace-nowrap text-cocoa-deep lg:inline">{info.pages}쪽</span>
+                      <span className="hidden rounded-full bg-paper px-1 text-[10px] whitespace-nowrap text-ink-soft lg:inline">{info.pages}쪽</span>
                     )}
                   </span>
 
@@ -166,7 +166,7 @@ export default function MonthGrid({ year, month, days = {}, today, selected, onS
                     )
                   )}
                   {info?.pages > 0 && (
-                    <span className="mt-auto self-end font-pixel text-[10px] text-cocoa-deep lg:hidden">{info.pages}</span>
+                    <span className="mt-auto self-end text-[10px] text-ink-soft lg:hidden">{info.pages}</span>
                   )}
                 </button>
               );

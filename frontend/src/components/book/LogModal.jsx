@@ -95,7 +95,7 @@ export default function LogModal({ open, onClose, record, records = [], defaultD
               </Select>
             </Field>
           )}
-          <p className="rounded-[8px] bg-milk px-4 py-3 text-[13.5px]">
+          <p className="rounded-[3px] bg-milk px-4 py-3 text-[13.5px]">
             <b className="font-serif">{current.book.title}</b> — 지금까지 <b>{base}</b> / {total}쪽
           </p>
           <Segmented

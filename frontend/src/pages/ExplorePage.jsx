@@ -84,7 +84,7 @@ export default function ExplorePage() {
                 <li key={r.id}>
                   <Link to={`/books/${r.book.id}`} className="group block">
                     <BookCover book={r.book} className="aspect-[3/4] w-full transition-transform group-hover:-translate-y-1" />
-                    <p className="mt-1.5 truncate font-pixel text-[12.5px] font-bold">{r.book.title}</p>
+                    <p className="mt-1.5 truncate font-serif text-[12.5px] font-bold">{r.book.title}</p>
                   </Link>
                   <Link to={`/users/${r.user.id}`} className="mt-0.5 flex items-center gap-1 text-[11.5px] text-ink-soft hover:underline">
                     <Avatar user={r.user} size={16} /> {r.user.nickname}

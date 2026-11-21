@@ -49,7 +49,7 @@ export function FollowListModal({ open, onClose, userId, type }) {
       ) : (
         <ul className="flex flex-col gap-1">
           {q.data.items.map((u) => (
-            <li key={u.id} className="flex items-center gap-3 rounded-[6px] px-1 py-1.5">
+            <li key={u.id} className="flex items-center gap-3 rounded-[3px] px-1 py-1.5">
               <Link to={`/users/${u.id}`} onClick={onClose} className="flex min-w-0 flex-1 items-center gap-2.5">
                 <Avatar user={u} size={34} />
                 <span className="min-w-0">
@@ -98,7 +98,7 @@ export function FeedItem({ item, compact = false }) {
           )}
         </p>
         {!compact && item.type === 'review' && (
-          <Link to={`/reviews/${item.review.id}`} className="mt-1 block truncate font-pixel text-[13px] text-link hover:underline">
+          <Link to={`/reviews/${item.review.id}`} className="mt-1 block truncate text-[13px] text-link hover:underline">
             {item.review.title}
           </Link>
         )}

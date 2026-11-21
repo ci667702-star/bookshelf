@@ -36,7 +36,7 @@ function Body({ data, id }) {
             ['쌓은 높이', `${stats.heightCm}cm`],
             ['독후감', `${num(stats.reviews)}편`],
           ].map(([k, v]) => (
-            <div key={k} className="rounded-[8px] bg-milk px-3 py-2.5">
+            <div key={k} className="rounded-[3px] bg-milk px-3 py-2.5">
               <dt className="text-[11.5px] text-ink-soft">{k}</dt>
               <dd className="numeral text-[20px]">{v}</dd>
             </div>
@@ -53,7 +53,7 @@ function Body({ data, id }) {
       <section>
         <SectionTitle title={isMe ? '내 책장' : '공개 책장'} />
         {shelves.length === 0 ? (
-          <p className="rounded-[8px] bg-milk px-4 py-8 text-center text-[13.5px] text-ink-soft">공개된 책장이 없어요.</p>
+          <p className="rounded-[3px] bg-milk px-4 py-8 text-center text-[13.5px] text-ink-soft">공개된 책장이 없어요.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {shelves.map((s) => (
@@ -79,7 +79,7 @@ function Body({ data, id }) {
         <QueryState query={reviews}>
           {(r) =>
             r.items.length === 0 ? (
-              <p className="rounded-[8px] bg-milk px-4 py-8 text-center text-[13.5px] text-ink-soft">볼 수 있는 독후감이 없어요.</p>
+              <p className="rounded-[3px] bg-milk px-4 py-8 text-center text-[13.5px] text-ink-soft">볼 수 있는 독후감이 없어요.</p>
             ) : (
               <div className="grid gap-3 md:grid-cols-2">
                 {r.items.map((rv) => (

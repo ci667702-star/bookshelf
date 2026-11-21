@@ -9,7 +9,7 @@ import { progressPct } from '../../utils/format.js';
 
 // 평면(2D) 일러스트 책장: 그라데이션 · 입체 그림자 없이 단색 + 잉크 외곽선
 
-const INK = '#51443D';
+const INK = '#233E7C';
 const LINE = `2px solid ${INK}`;
 
 // ───────── 벽 배경 ─────────
@@ -85,7 +85,7 @@ export function Spine({ record, height, width, compact }) {
       {variant === 2 && <span aria-hidden className="w-full shrink-0" style={{ height: '14%', background: pal.band, borderBottom: `1.5px solid ${INK}` }} />}
       {variant === 0 && <span aria-hidden className="mt-[10%] block w-full shrink-0" style={{ height: 3, background: pal.band }} />}
       <span
-        className={`mt-[10%] line-clamp-1 font-pixel leading-none font-bold [writing-mode:vertical-rl] ${
+        className={`mt-[10%] line-clamp-1 font-serif leading-none font-extrabold tracking-[-0.02em] [writing-mode:vertical-rl] ${
           variant === 1 ? 'rounded-[2px] bg-[#FFF9F2] px-[1px] py-1 text-ink' : ''
         }`}
         style={{ fontSize: fs, maxHeight: height * 0.66, border: variant === 1 ? `1.5px solid ${INK}` : undefined }}
@@ -319,7 +319,7 @@ export default function ShelfScene({
   return (
     <div
       ref={sceneRef}
-      className={`relative isolate overflow-hidden rounded-[8px] border-[1.5px] border-ink/85 ${className}`}
+      className={`relative isolate overflow-hidden rounded-[3px] border-[1.5px] border-ink/85 ${className}`}
       style={sceneBackground(decoration)}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -380,7 +380,7 @@ export default function ShelfScene({
             ))}
             {records.length === 0 && emptyMessage && (
               <div className="pointer-events-auto absolute inset-0 z-20 flex items-center justify-center px-6 text-center">
-                <div className="rounded-[6px] border-[1.5px] border-ink/85 bg-paper px-4 py-3">{emptyMessage}</div>
+                <div className="rounded-[3px] border-[1.5px] border-ink/85 bg-paper px-4 py-3">{emptyMessage}</div>
               </div>
             )}
           </div>
@@ -426,7 +426,7 @@ export default function ShelfScene({
               onPointerDown={(e) => onPointerDown(e, d)}
               onKeyDown={(e) => editable && e.key === 'Enter' && onSelect?.(d.id)}
               className={`absolute touch-none select-none ${editable ? 'cursor-grab active:cursor-grabbing' : ''} ${
-                selected ? 'rounded-[6px] outline-2 outline-offset-4 outline-link outline-dashed' : ''
+                selected ? 'rounded-[3px] outline-2 outline-offset-4 outline-link outline-dashed' : ''
               }`}
               style={{ left: `${d.x}%`, top: `${d.y}%`, transform: `translate(-50%, -50%) rotate(${d.rotate}deg) scale(${d.scale})` }}
             >

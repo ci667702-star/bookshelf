@@ -47,7 +47,7 @@ export default function ImageUpload({ value, onChange, label = '이미지', aspe
   return (
     <div className="flex flex-col gap-2">
       <div
-        className={`relative overflow-hidden rounded-[8px] border-[1.5px] border-dashed border-kraft-deep bg-milk ${aspect}`}
+        className={`relative overflow-hidden rounded-[3px] border-[1.5px] border-dashed border-kraft-deep bg-milk ${aspect}`}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();

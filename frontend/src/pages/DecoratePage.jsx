@@ -36,7 +36,7 @@ function Chip({ active, onClick, children, className = '' }) {
       onClick={onClick}
       aria-pressed={active}
       className={`rounded-xl border-[1.5px] px-2.5 py-2 text-[12.5px] font-semibold transition ${
-        active ? 'border-cocoa bg-rose/50' : 'border-kraft-deep/70 bg-paper hover:border-cocoa/50'
+        active ? 'border-ink bg-rose/50' : 'border-kraft-deep/70 bg-paper hover:border-ink/50'
       } ${className}`}
     >
       {children}
@@ -180,7 +180,7 @@ function Editor({ shelfId, data, shelves }) {
         <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
           <div className="mb-2 flex items-center justify-between text-[12.5px] text-ink-soft">
             <span>실시간 미리보기</span>
-            {dirty ? <span className="font-semibold text-cocoa-deep">저장하지 않은 변경이 있어요</span> : <span>저장됨</span>}
+            {dirty ? <span className="font-semibold text-link">저장하지 않은 변경이 있어요</span> : <span>저장됨</span>}
           </div>
           <ShelfScene
             records={data.records}
@@ -193,7 +193,7 @@ function Editor({ shelfId, data, shelves }) {
             minRows={2}
           />
           {/* 선택한 장식 도구 */}
-          <div className="mt-3 flex min-h-12 flex-wrap items-center gap-2 rounded-[8px] bg-paper px-3 py-2 shadow-[var(--shadow-soft)]">
+          <div className="mt-3 flex min-h-12 flex-wrap items-center gap-2 rounded-[3px] bg-paper px-3 py-2 shadow-[var(--shadow-soft)]">
             {selected ? (
               <>
                 <Sticker kind={selected.kind} type={selected.type} className="h-8 w-8" diecut={false} />
@@ -278,7 +278,7 @@ function Editor({ shelfId, data, shelves }) {
                   aria-label={`배경색 ${c}`}
                   aria-pressed={draft.background.color.toUpperCase() === c}
                   onClick={() => set({ background: { ...draft.background, color: c } })}
-                  className={`h-8 w-8 rounded-full border-[1.5px] transition ${draft.background.color.toUpperCase() === c ? 'scale-110 border-cocoa ring-2 ring-rose' : 'border-ink/15'}`}
+                  className={`h-8 w-8 rounded-full border-[1.5px] transition ${draft.background.color.toUpperCase() === c ? 'scale-110 border-ink ring-2 ring-rose-deep' : 'border-ink/15'}`}
                   style={{ background: c }}
                 />
               ))}
@@ -343,7 +343,7 @@ function Editor({ shelfId, data, shelves }) {
                     onClick={() => (locked ? toast.info(`배지 「${badge?.name ?? ''}」를 얻으면 열려요.`) : add('sticker', type))}
                     aria-disabled={locked || undefined}
                     title={locked ? `배지 「${badge?.name ?? ''}」를 얻으면 열려요` : undefined}
-                    className={`relative flex flex-col items-center gap-1 rounded-[6px] border-[1.5px] py-2 text-[11.5px] font-semibold transition ${
+                    className={`relative flex flex-col items-center gap-1 rounded-[3px] border-[1.5px] py-2 text-[11.5px] font-semibold transition ${
                       locked ? 'border-dashed border-ink/25 bg-kraft/40 text-ink-soft' : 'border-transparent bg-milk hover:border-ink/40 hover:bg-rose/50'
                     }`}
                   >

@@ -76,7 +76,7 @@ export default function SignupPage() {
   const fe = (k) => errors[k] || serverError?.fields?.[k];
 
   return (
-    <AuthWindow title="회원가입.exe" tone="bg-matcha">
+    <AuthWindow title="북모먼트 회원가입" tone="green">
       <h1 className="text-[26px]">나만의 책장 만들기</h1>
       <p className="mt-1 mb-6 text-[14px] text-ink-soft">오늘 읽은 한 페이지가 나만의 책장이 됩니다.</p>
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
@@ -132,7 +132,7 @@ export default function SignupPage() {
       </form>
       <p className="mt-6 text-center text-[13.5px] text-ink-soft">
         이미 계정이 있나요?{' '}
-        <Link to="/login" className="font-semibold text-cocoa-deep underline underline-offset-4">
+        <Link to="/login" className="font-semibold text-link underline underline-offset-4">
           로그인
         </Link>
       </p>

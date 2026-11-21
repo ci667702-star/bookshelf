@@ -8,7 +8,7 @@ import { useDocumentTitle } from '../hooks/index.js';
 import Button from '../components/ui/Button.jsx';
 import Modal, { ConfirmDialog } from '../components/ui/Modal.jsx';
 import { QueryState, EmptyState, Spinner } from '../components/ui/States.jsx';
-import { Avatar, PrivacyBadge, Segmented, StatusBadge } from '../components/ui/Misc.jsx';
+import { Avatar, PrivacyBadge, Segmented, StatTile, StatusBadge } from '../components/ui/Misc.jsx';
 import ShelfScene from '../components/book/ShelfScene.jsx';
 import BookCover from '../components/book/BookCover.jsx';
 import { ReviewCard } from '../components/review/ReviewParts.jsx';
@@ -37,7 +37,7 @@ function InviteCode({ shelf, isOwner }) {
     }
   };
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-[8px] border-[1.5px] border-dashed border-ink/35 bg-butter px-4 py-3">
+    <div className="flex flex-wrap items-center gap-3 rounded-[3px] border-[1.5px] border-dashed border-ink/35 bg-butter px-4 py-3">
       <span className="text-[12.5px] font-semibold text-ink/70">초대 코드</span>
       <code className="font-sans text-[20px] font-bold tracking-[0.28em] select-all">{shelf.inviteCode}</code>
       <div className="ml-auto flex gap-1.5">
@@ -69,7 +69,7 @@ function AddBookModal({ open, onClose, shelfId, existingRecordIds }) {
   const candidates = (mine.data?.items ?? []).filter((r) => !existingRecordIds.has(r.id));
   return (
     <Modal open={open} onClose={onClose} title="공유 책장에 책 꽂기" tone="green" size="lg">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-[8px] bg-milk px-4 py-3 text-[13.5px]">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-[3px] bg-milk px-4 py-3 text-[13.5px]">
         <span>내 책장에 없는 새 책인가요?</span>
         <Button size="sm" variant="secondary" to={`/books/new?shared=${shelfId}`}>
           <BookPlus size={14} /> 새 책 등록하고 꽂기
@@ -86,7 +86,7 @@ function AddBookModal({ open, onClose, shelfId, existingRecordIds }) {
       ) : (
         <ul className="flex flex-col gap-2">
           {candidates.map((r) => (
-            <li key={r.id} className="flex items-center gap-3 rounded-[8px] bg-milk p-2.5">
+            <li key={r.id} className="flex items-center gap-3 rounded-[3px] bg-milk p-2.5">
               <BookCover book={r.book} className="h-14 w-10 shrink-0" />
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-serif text-[14.5px] font-bold">{r.book.title}</span>
@@ -119,9 +119,9 @@ function MemberBars({ members, metric }) {
               <Avatar user={m.user} size={22} />
               <span className="truncate">{m.user.nickname}</span>
             </span>
-            <span className="h-5 rounded-[4px] bg-kraft/60">
+            <span className="h-5 rounded-[3px] bg-kraft/60">
               <span
-                className="block h-full rounded-[4px] bg-cocoa transition-[width] duration-500"
+                className="block h-full rounded-[3px] bg-ink transition-[width] duration-500"
                 style={{ width: `${(v / max) * 100}%`, minWidth: v > 0 ? 4 : 0 }}
               />
             </span>
@@ -202,7 +202,7 @@ function Body({ data }) {
 
       <header className="card mb-5 overflow-hidden">
         <div className="flex flex-col gap-5 p-5 sm:flex-row sm:p-7">
-          <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-[8px] bg-matcha">
+          <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-[3px] bg-matcha">
             {shelf.coverImage ? <img src={shelf.coverImage} alt="" className="h-full w-full object-cover" /> : <span className="wordmark text-[40px] text-matcha-deep">{shelf.name.slice(0, 1)}</span>}
           </div>
           <div className="min-w-0 flex-1">
@@ -394,13 +394,7 @@ function Body({ data }) {
           ['함께 읽은 페이지', num(stats.pages), '쪽', 'bg-butter'],
           ['함께 쌓은 높이', stats.heightCm, 'cm', 'bg-sky'],
         ].map(([label, v, u, tone]) => (
-          <div key={label} className={`tile ${tone} p-4`}>
-            <p className="text-[12.5px] font-semibold text-ink/70">{label}</p>
-            <p className="flex items-baseline gap-1">
-              <span className="numeral text-[30px] leading-tight">{v}</span>
-              <span className="text-[12.5px] font-bold">{u}</span>
-            </p>
-          </div>
+          <StatTile key={label} big tone={tone} label={label} value={v} unit={u} />
         ))}
       </section>
         <section className="card p-5 sm:p-7">

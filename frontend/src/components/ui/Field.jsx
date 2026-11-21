@@ -17,7 +17,7 @@ export function Field({ label, hint, error, required, children, className = '' }
       {label && (
         <label htmlFor={children?.props?.id ?? id} className="text-[13.5px] font-semibold text-ink">
           {label}
-          {required && <span className="ml-0.5 text-cocoa" aria-hidden>*</span>}
+          {required && <span className="ml-0.5 text-pin" aria-hidden>*</span>}
         </label>
       )}
       {control}
@@ -45,7 +45,7 @@ export function Textarea({ className = '', ...props }) {
 export function Select({ className = '', children, ...props }) {
   return (
     <select
-      className={`field h-11 cursor-pointer appearance-none bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2351443D' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")] bg-[length:12px] bg-[right_14px_center] bg-no-repeat pr-9 ${className}`}
+      className={`field h-11 cursor-pointer appearance-none bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23233E7C' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")] bg-[length:12px] bg-[right_14px_center] bg-no-repeat pr-9 ${className}`}
       {...props}
     >
       {children}
@@ -56,7 +56,7 @@ export function Select({ className = '', children, ...props }) {
 export function FormError({ message }) {
   if (!message) return null;
   return (
-    <div role="alert" className="rounded-[8px] border border-berry/25 bg-rose/50 px-4 py-3 text-[13.5px] font-medium text-berry">
+    <div role="alert" className="rounded-[3px] border-[1.5px] border-berry/40 bg-rose/50 px-4 py-3 text-[13.5px] font-medium text-berry">
       {message}
     </div>
   );
